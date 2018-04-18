@@ -1,17 +1,53 @@
+#include "binkLED.h"
 
+
+#define REGSIZE 34  //17 ours? 32 total?
 
 system_t sys;
 
 int main(int argc, char **argv){
+   os_init();
+   create_thread("Thread 0", &blinkLEDMian, NULL, BLINK_LED_SIZE);
+   os_start();
+
+}
+
+void os_init(){
    sys.curThread=-1;
    sys.threadCount=0;
    sys.time=0;
-   
-
-
 
 }
-         
+
+void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size){
+      thread_t *thr;
+
+      thr = malloc(sizeof(thread_t));
+      thr->name=name;
+      //dont need?
+      //thr->address=address;
+      //thr->args->args;
+      thr->stackTop = malloc(stack_size + REGSIZE);
+      thr->stackBase = thr->stackTop + stack_size + REGSIZE;
+      
+      
+      //init stack and stack pointer
+
+
+      sys.thread[sys.threadCount] = thr;
+      sys.threadCount++;
+}
+
+void os_start(){
+   uint8_t next;
+   uint16_t trash;
+
+   next = get_next_thread();
+   sys.curThread = next;
+   context_switch(sys.threads[next]->stackPtr, &trash);
+   //done?
+}
+
 uint8_t get_next_thread(){
    return (sys.curThread+1)%sys.threadCount
 }
@@ -65,6 +101,9 @@ void context_switch(uint16_t *newSP, uint16_t *oldSP){
 
 //This interrupt routine is automatically run every 10 milliseconds
 ISR(TIMER0_COMPA_vect) {
+   uint8_t next;
+   
+   //START SENG
    //At the beginning of this ISR, the registers r0, r1, and r18-31 have 
    //already been pushed to the stack
 
@@ -80,8 +119,15 @@ ISR(TIMER0_COMPA_vect) {
    
    //At the end of this ISR, GCC generated code will pop r18-r31, r1, 
    //and r0 before exiting the ISR
+   //END SENG
+   
+   next = get_next_thread();
+   context_switch(sys.threads[next]->stackPtr, sys.threads[sys.curThread]->stackPtr);
+   sys.curThread = next;
+
 }
 
+//START SENG
 //Call this to start the system timer interrupt
 void start_system_timer() {
    TIMSK0 |= _BV(OCIE0A);  //interrupt on compare match
@@ -98,7 +144,7 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
 __attribute__((naked)) void thread_start(void) {
    sei(); //enable interrupts - leave as the first statement in thread_start()
 }
-
+//END SENG
 
 
 
