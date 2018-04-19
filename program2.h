@@ -70,14 +70,26 @@ typedef struct thread_t {
    uint16_t stackSize;
    uint16_t stackTop;
    uint16_t stackBase;
-   uint16_t stackEnd;
+   uint16_t *  stackPtr;
 } thread_t;
 
 typedef struct system_t {
-   thread_t thread[8];
+   thread_t threads[8];
    int8_t curThread;
    uint8_t threadCount;
    uint32_t time;
    
 } system_t;
+
+
+
+void os_init(void);
+void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size);
+void os_start(void);
+uint8_t get_next_thread(void);
+void thread_start(void);
+
+__attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp);
+
+
 #endif

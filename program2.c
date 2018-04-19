@@ -1,13 +1,19 @@
-#include "binkLED.h"
+#include "globals.h"
+#include "program2.h"
+#include "blinkLED.h"
 
+#include <string.h>
 
 #define REGSIZE 34  //17 ours? 32 total?
 
 system_t sys;
 
 int main(int argc, char **argv){
+   serial_init();
    os_init();
-   create_thread("Thread 0", &blinkLEDMian, NULL, BLINK_LED_SIZE);
+   /* print_string("initied os'\r\n"); */
+   create_thread("Thread 0", (uint16_t) &blinkLEDMain, NULL, BLINK_LED_SIZE);
+   /* printThread(sys.threads[0]); */
    os_start();
 
 }
@@ -20,82 +26,96 @@ void os_init(){
 }
 
 void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size){
-      thread_t *thr;
-
-      thr = malloc(sizeof(thread_t));
-      thr->name=name;
-      //dont need?
-      //thr->address=address;
-      //thr->args->args;
-      thr->stackTop = malloc(stack_size + REGSIZE);
-      thr->stackBase = thr->stackTop + stack_size + REGSIZE;
+   thread_t *thr;
+   regs_interrupt * regi;
+   regs_context_switch * regs;
+   sys.threads[sys.threadCount].name=name;
+   //dont need? TODO:
+   //thr->address=address;
+   //thr->args->args;
+   sys.threads[sys.threadCount].stackTop = (uint16_t)malloc(stack_size + REGSIZE);
+   sys.threads[sys.threadCount].stackBase =
+      sys.threads[sys.threadCount].stackTop + stack_size + REGSIZE;
       
-      
-      //init stack and stack pointer
+
+   regi =(regs_interrupt *) sys.threads[sys.threadCount].stackBase;
+   regs = (regs_context_switch *) (regi+1);
+
+   memset(regi, 0, sizeof(regs_interrupt) + sizeof(regs_context_switch));
+
+   regs->pch = address >> 8;
+   regs->pcl = address & 0x0F;
+
+   /* TODO: place arguments in thingy */
+   
+   /* write rest of stuff here */
+   
+   //init stack and stack pointer
+   sys.threadCount++;
 
 
-      sys.thread[sys.threadCount] = thr;
-      sys.threadCount++;
+   
 }
 
 void os_start(){
    uint8_t next;
    uint16_t trash;
-
    next = get_next_thread();
    sys.curThread = next;
-   context_switch(sys.threads[next]->stackPtr, &trash);
+   print_string("start\r\n");
+   context_switch(sys.threads[next].stackPtr, &trash);
+   print_string("done?\r\n");
    //done?
 }
 
 uint8_t get_next_thread(){
-   return (sys.curThread+1)%sys.threadCount
+   return (sys.curThread+1)%sys.threadCount;
 }
 
-void context_switch(uint16_t *newSP, uint16_t *oldSP){
+__attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    //push
-   asm volatile("push r29"); 
-   asm volatile("push r28"); 
-   asm volatile("push r17"); 
-   asm volatile("push r16"); 
-   asm volatile("push r15"); 
-   asm volatile("push r14"); 
-   asm volatile("push r13"); 
-   asm volatile("push r12"); 
-   asm volatile("push r11"); 
-   asm volatile("push r10"); 
-   asm volatile("push r9"); 
-   asm volatile("push r8"); 
-   asm volatile("push r7"); 
-   asm volatile("push r6"); 
-   asm volatile("push r5"); 
-   asm volatile("push r4"); 
-   asm volatile("push r3"); 
-   asm volatile("push r2"); 
+   /* asm volatile("push r29");  */
+   /* asm volatile("push r28");  */
+   /* asm volatile("push r17");  */
+   /* asm volatile("push r16");  */
+   /* asm volatile("push r15");  */
+   /* asm volatile("push r14");  */
+   /* asm volatile("push r13");  */
+   /* asm volatile("push r12");  */
+   /* asm volatile("push r11");  */
+   /* asm volatile("push r10");  */
+   /* asm volatile("push r9");  */
+   /* asm volatile("push r8");  */
+   /* asm volatile("push r7");  */
+   /* asm volatile("push r6");  */
+   /* asm volatile("push r5");  */
+   /* asm volatile("push r4");  */
+   /* asm volatile("push r3");  */
+   asm volatile("push r2");
 
-   //save old stack pointer
-   //load new stack pointer 
+   /* //save old stack pointer */
+   /* //load new stack pointer  */
    
    
-   //pop
-   asm volatile("pop r2"); 
-   asm volatile("pop r3"); 
-   asm volatile("pop r4"); 
-   asm volatile("pop r5"); 
-   asm volatile("pop r6"); 
-   asm volatile("pop r7"); 
-   asm volatile("pop r8"); 
-   asm volatile("pop r9"); 
-   asm volatile("pop r10"); 
-   asm volatile("pop r11"); 
-   asm volatile("pop r12"); 
-   asm volatile("pop r13"); 
-   asm volatile("pop r14"); 
-   asm volatile("pop r15"); 
-   asm volatile("pop r16"); 
-   asm volatile("pop r17"); 
-   asm volatile("pop r28"); 
-   asm volatile("pop r29"); 
+   /* //pop */
+   asm volatile("pop r2");
+   /* asm volatile("pop r3");  */
+   /* asm volatile("pop r4");  */
+   /* asm volatile("pop r5");  */
+   /* asm volatile("pop r6");  */
+   /* asm volatile("pop r7");  */
+   /* asm volatile("pop r8");  */
+   /* asm volatile("pop r9");  */
+   /* asm volatile("pop r10");  */
+   /* asm volatile("pop r11");  */
+   /* asm volatile("pop r12");  */
+   /* asm volatile("pop r13");  */
+   /* asm volatile("pop r14");  */
+   /* asm volatile("pop r15");  */
+   /* asm volatile("pop r16");  */
+   /* asm volatile("pop r17");  */
+   /* asm volatile("pop r28");  */
+   /* asm volatile("pop r29");  */
 
 }
 
@@ -122,7 +142,7 @@ ISR(TIMER0_COMPA_vect) {
    //END SENG
    
    next = get_next_thread();
-   context_switch(sys.threads[next]->stackPtr, sys.threads[sys.curThread]->stackPtr);
+   context_switch(sys.threads[next].stackPtr, sys.threads[sys.curThread].stackPtr);
    sys.curThread = next;
 
 }
@@ -138,8 +158,6 @@ void start_system_timer() {
    OCR0A = 156;             //generate interrupt every 9.98 milliseconds
 }
 
-__attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
-}
 
 __attribute__((naked)) void thread_start(void) {
    sei(); //enable interrupts - leave as the first statement in thread_start()
@@ -148,3 +166,14 @@ __attribute__((naked)) void thread_start(void) {
 
 
 
+void printThread(thread_t thread) {
+   print_string("Thread ID: ");    print_int(thread.id);
+   print_string("\nThread Name: ");  print_string(thread.name);
+   print_string("\nThread PC: 0x");  print_hex(thread.pc);
+   /* print_string("Stack Usage: ");  print_int(thread.); */
+   print_string("\nStack Size: ");   print_int(thread.id);
+   print_string("\nCurrent top of stack: ");print_hex(thread.stackTop);
+   print_string("\nStack Base: ");   print_hex(thread.stackBase);
+   print_string("\nStack Ptr: ");    print_hex(*(thread.stackPtr));
+
+} 
