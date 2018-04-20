@@ -27,7 +27,6 @@ void os_init(){
 
 void read(char* name, uint16_t address, void* args, uint16_t stack_size){
    thread_t *thr;
-   regs_interrupt * regi;
    regs_context_switch * regs;
    sys.threads[sys.threadCount].name=name;
    //dont need? TODO:
@@ -37,16 +36,20 @@ void read(char* name, uint16_t address, void* args, uint16_t stack_size){
    sys.threads[sys.threadCount].stackBase =
       sys.threads[sys.threadCount].stackTop + stack_size + REGSIZE;
    sys.threads[sys.threadCount].stackPtr = sys.threads[sys.threadCount].stackBase 
-      -sizeof(regs_interrupt) -sizeof(regs_context_switch);
+      - sizeof(regs_context_switch);
    
    //init stack
-   regi =(regs_interrupt *) sys.threads[sys.threadCount].stackBase;
-   regs = (regs_context_switch *) (regi+1);
-   
-   memset(regi, 0, sizeof(regs_interrupt) + sizeof(regs_context_switch));
+   regs = (regs_context_switch *) sys.threads[sys.threadCount].stackPtr;
+   memset(regi, 0, sizeof(regs_context_switch));
 
-   regs->pch = address >> 8;
-   regs->pcl = address & 0x0F;
+   regs->pcl = (uint8_t) thread_start;
+   regs->pch = (uint8_t) (((uint16_t)thread_start) >> 8);
+   regs->eind = 0;               //3rd byte of PC
+
+   regs->r2 = (uint8_t) address; 
+   regs->r3 = (uint8_t) address >> 8; 
+
+
 
    /* TODO: place arguments in thingy */
    /* write rest of stuff here */
@@ -68,6 +71,12 @@ void os_start(){
 
 uint8_t get_next_thread(){
    return (sys.curThread+1)%sys.threadCount;
+}
+
+//ijump to given function address (r2, r3) moved into Z vreg (r30, r31)
+void thread_start(){
+   asm volatile("movw r30:r31, r2:r3"); 
+   asm volatile("ijmp");
 }
 
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
@@ -114,7 +123,7 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    /* asm volatile("pop r17");  */
    /* asm volatile("pop r28");  */
    /* asm volatile("pop r29");  */
-
+   return;
 }
 
 //This interrupt routine is automatically run every 10 milliseconds
