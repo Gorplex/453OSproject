@@ -25,7 +25,7 @@ void os_init(){
 
 }
 
-void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size){
+void read(char* name, uint16_t address, void* args, uint16_t stack_size){
    thread_t *thr;
    regs_interrupt * regi;
    regs_context_switch * regs;
@@ -36,25 +36,23 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    sys.threads[sys.threadCount].stackTop = (uint16_t)malloc(stack_size + REGSIZE);
    sys.threads[sys.threadCount].stackBase =
       sys.threads[sys.threadCount].stackTop + stack_size + REGSIZE;
-      
-
+   sys.threads[sys.threadCount].stackPtr = sys.threads[sys.threadCount].stackBase 
+      -sizeof(regs_interrupt) -sizeof(regs_context_switch);
+   
+   //init stack
    regi =(regs_interrupt *) sys.threads[sys.threadCount].stackBase;
    regs = (regs_context_switch *) (regi+1);
-
+   
    memset(regi, 0, sizeof(regs_interrupt) + sizeof(regs_context_switch));
 
    regs->pch = address >> 8;
    regs->pcl = address & 0x0F;
 
    /* TODO: place arguments in thingy */
-   
    /* write rest of stuff here */
    
    //init stack and stack pointer
    sys.threadCount++;
-
-
-   
 }
 
 void os_start(){
@@ -141,6 +139,7 @@ ISR(TIMER0_COMPA_vect) {
    //and r0 before exiting the ISR
    //END SENG
    
+   sys.time++;
    next = get_next_thread();
    context_switch(sys.threads[next].stackPtr, sys.threads[sys.curThread].stackPtr);
    sys.curThread = next;
