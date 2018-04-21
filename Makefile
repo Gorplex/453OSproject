@@ -3,10 +3,10 @@
 #DEVICE = /dev/tty.usbmodem1431
 
 #Linux (/dev/ttyACM0 or possibly /dev/ttyUSB0)
-DEVICE = /dev/ttyACM0 
+#DEVICE = /dev/ttyACM0 
 
 #Windows
-#DEVICE = COM12 
+DEVICE = COM12 
 
 #default target to compile the code
 default: main

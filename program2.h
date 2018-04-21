@@ -64,7 +64,6 @@ typedef struct regs_interrupt {
 
 
 typedef struct thread_t {
-   uint8_t id;
    char * name;
    uint16_t pc;
    uint16_t stackPtr;

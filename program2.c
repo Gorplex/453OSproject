@@ -17,15 +17,10 @@ int main(int argc, char **argv){
    serial_init();
    os_init();
 
+   create_thread("blink", (uint16_t) &blinkLEDMain, NULL, BLINK_LED_SIZE);
+   create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
 
-   /* print_string("initied os'\r\n"); */
-   create_thread("Blink", (uint16_t) &blinkLEDMain, NULL, BLINK_LED_SIZE);
-   /* create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE); */
-
-
-   printThread(sys->threads[0]);
-
-         
+   printSys(sys);
    os_start();
 }
 
@@ -42,10 +37,10 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    sys->threads[sys->threadCount].name=name;
    sys->threads[sys->threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
    sys->threads[sys->threadCount].stackEnd =
-      sys->threads[sys->threadCount].stackBase + stack_size + REGSIZE-1;
+      sys->threads[sys->threadCount].stackBase + stack_size + REGSIZE;
 
-   sys->threads[sys->threadCount].stackPtr = sys->threads[sys->threadCount].stackEnd
-      - sizeof(regs_context_switch);
+   sys->threads[sys->threadCount].stackPtr = (sys->threads[sys->threadCount].stackEnd
+      - sizeof(regs_context_switch));
    
    //init stack
    regs = (regs_context_switch *) sys->threads[sys->threadCount].stackPtr;
@@ -54,57 +49,33 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 
    regs->pcl = (uint8_t) ((uint16_t)thread_start);
    regs->pch = (uint8_t) (((uint16_t)thread_start) >> 8);
-   regs->eind = 0;               //3rd byte of PC
+   //zero upper byte of PC
+   regs->eind = 0;              
 
    /* this is the stack */
    regs->r2 = (uint8_t) address; 
-   regs->r3 = (uint8_t) address >> 8; 
+   regs->r3 = (uint8_t) (address >> 8); 
 
    regs->r4 = (uint8_t) ((uint16_t)args); 
-   regs->r5 = (uint8_t) ((uint16_t)args) >> 8; 
+   regs->r5 = (uint8_t) (((uint16_t)args) >> 8); 
 
    sys->threadCount++;
-
-   
-   print_string("\n\r create thereadt");
-   print_string("\n\r threadstrart: ");
-   print_hex32(thread_start);
-
-   
-   print_string("\n\r ");
-   print_hex32(*(&sys->threads[0].stackEnd-1));
-   print_string("\t");
-   print_hex32(*(&sys->threads[0].stackEnd-2));
-   print_string("\t");
-   print_hex32(*(&sys->threads[0].stackEnd)-3);
-   print_string("\r\n");
-
-   
 }
 
 void os_start(){
    uint8_t next;
    uint16_t trash;
-   print_string("start\r\n");
+   //print_string("start\r\n");
    
    next = get_next_thread();
    sys->curThread = next;
    context_switch(&(sys->threads[next].stackPtr), &trash);
-   /*context_switch(&trash, &tempTrash);
-   print_string("Trash: ");
-   print_hex(trash);
-   print_string("\r\n");
-   print_string("tempTrash: ");
-   print_hex(tempTrash);
-   print_string("\r\n");*/
-   print_string("done?\r\n");
    //should never get here
 }
 
 uint8_t get_next_thread(){
    return (sys->curThread+1)%sys->threadCount;
 }
-
 
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    
@@ -187,18 +158,21 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    asm volatile("pop r3"); 
    asm volatile("pop r2");
 
-   print_string("context");
+   /*print_string("context");
 
    print_string("\n\r pc h l: ");
-   print_hex32(*(&sys->threads[0].stackEnd-1));
+   print_string("\n\r ");
+   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-1)));
    print_string("\t");
-   print_hex32(*(&sys->threads[0].stackEnd-2));
+   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-2)));
    print_string("\t");
-   print_hex32(*(&sys->threads[0].stackEnd)-3);
-   print_string("\r\n");
-
-
+   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-3)));
+   print_string("\n\r");
    
+   print_string("\n\r addr check: ");
+   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-4)));
+   print_string("\n\r");
+   */
    //return
    asm volatile("ret");
 }
@@ -248,11 +222,6 @@ __attribute__((naked)) void thread_start(void) {
    //END SENG
    //ijump to given function address - (r2, r3) moved into Z vreg (r30, r31)
    //agrs moved from (r4, r5) to (r22, r23)
-   print_string("HELLLLLP I'M HERERE");
-
-
-
-
    asm volatile("movw r30, r2"); 
    asm volatile("movw r22, r4"); 
    asm volatile("ijmp");
