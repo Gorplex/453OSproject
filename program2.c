@@ -3,54 +3,72 @@
 #include "globals.h"
 #include "program2.h"
 #include "blinkLED.h"
+#include "printThreads.h"
 
 #define REGSIZE 34  //17 ours? 32 total?
 
 //void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size);
 
-void printThread(thread_t t);
 
-system_t sys;
+/* sys is now stored in heap space because of weird issue of sys not updating */
+system_t * sys;
 
 int main(int argc, char **argv){
    serial_init();
    os_init();
+
+
    /* print_string("initied os'\r\n"); */
-   create_thread("Thread 0", (uint16_t) &blinkLEDMain, NULL, BLINK_LED_SIZE);
-   printThread(sys.threads[0]);
+   create_thread("Blink", (uint16_t) &blinkLEDMain, NULL, BLINK_LED_SIZE);
+   /* create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE); */
+
+
+   printThread(sys->threads[0]);
+
+         
    os_start();
 }
 
 void os_init(){
-   sys.curThread=-1;
-   sys.threadCount=0;
-   sys.time=0;
+   sys = malloc(sizeof(system_t));
+   sys->curThread=-1;
+   sys->threadCount=0;
+   sys->time=0;
 }
 
 void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size){
-   thread_t *thr;
    regs_context_switch * regs;
-   sys.threads[sys.threadCount].name=name;
-   sys.threads[sys.threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
-   sys.threads[sys.threadCount].stackEnd =
-      sys.threads[sys.threadCount].stackBase + stack_size + REGSIZE;
+
+   sys->threads[sys->threadCount].name=name;
+   sys->threads[sys->threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
+   sys->threads[sys->threadCount].stackEnd =
+      sys->threads[sys->threadCount].stackBase + stack_size + REGSIZE-1;
    
    //init stack
-   regs = (regs_context_switch *) sys.threads[sys.threadCount].stackPtr;
+   regs = (regs_context_switch *) (sys->threads[sys->threadCount].stackEnd
+				   - sizeof( regs_context_switch));
    memset(regs, 0, sizeof(regs_context_switch));
-   sys.threads[sys.threadCount].stackPtr = (uint16_t) &(regs->padding);
+   sys->threads[sys->threadCount].stackPtr = (uint16_t) &(regs->padding);
 
    regs->pcl = (uint8_t) ((uint16_t)thread_start);
    regs->pch = (uint8_t) (((uint16_t)thread_start) >> 8);
    regs->eind = 0;               //3rd byte of PC
 
+   /* this is the stack */
    regs->r2 = (uint8_t) address; 
    regs->r3 = (uint8_t) address >> 8; 
 
-   regs->r3 = (uint8_t) ((uint16_t)args); 
-   regs->r4 = (uint8_t) ((uint16_t)args) >> 8; 
+   regs->r4 = (uint8_t) ((uint16_t)args); 
+   regs->r5 = (uint8_t) ((uint16_t)args) >> 8; 
 
-   sys.threadCount++;
+   sys->threadCount++;
+
+   
+   print_string("\n\r create thereadt");
+   print_string("\n\r threadstrart: ");
+   print_hex32(thread_start);
+
+   
 }
 
 void os_start(){
@@ -59,8 +77,8 @@ void os_start(){
    print_string("start\r\n");
    
    next = get_next_thread();
-   sys.curThread = next;
-   context_switch(&(sys.threads[next].stackPtr), &trash);
+   sys->curThread = next;
+   context_switch(&(sys->threads[next].stackPtr), &trash);
    /*context_switch(&trash, &tempTrash);
    print_string("Trash: ");
    print_hex(trash);
@@ -73,7 +91,7 @@ void os_start(){
 }
 
 uint8_t get_next_thread(){
-   return (sys.curThread+1)%sys.threadCount;
+   return (sys->curThread+1)%sys->threadCount;
 }
 
 
@@ -158,6 +176,18 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    asm volatile("pop r3"); 
    asm volatile("pop r2");
 
+   print_string("context");
+
+   print_string("\n\r pc h l: ");
+   print_hex32(*(&sys->threads[0].stackEnd-1));
+   print_string("\t");
+   print_hex32(*(&sys->threads[0].stackEnd-2));
+   print_string("\t");
+   print_hex32(*(&sys->threads[0].stackEnd)-3);
+   print_string("\r\n");
+
+
+   
    //return
    asm volatile("ret");
 }
@@ -184,10 +214,10 @@ ISR(TIMER0_COMPA_vect) {
    //and r0 before exiting the ISR
    //END SENG
    
-   sys.time++;
+   sys->time++;
    next = get_next_thread();
-   context_switch(&(sys.threads[next].stackPtr), &(sys.threads[sys.curThread].stackPtr));
-   sys.curThread = next;
+   context_switch(&(sys->threads[next].stackPtr), &(sys->threads[sys->curThread].stackPtr));
+   sys->curThread = next;
 
 }
 
@@ -207,18 +237,13 @@ __attribute__((naked)) void thread_start(void) {
    //END SENG
    //ijump to given function address - (r2, r3) moved into Z vreg (r30, r31)
    //agrs moved from (r4, r5) to (r22, r23)
+   print_string("HELLLLLP I'M HERERE");
+
+
+
+
    asm volatile("movw r30, r2"); 
    asm volatile("movw r22, r4"); 
    asm volatile("ijmp");
 }
 
-void printThread(thread_t thread) {
-   print_string("Thread ID: ");    print_int(thread.id);
-   print_string("\r\nThread Name: ");  print_string(thread.name);
-   print_string("\r\nThread PC: 0x");  print_hex(thread.pc);
-   /* print_string("Stack Usage: ");  print_int(thread.); */
-   print_string("\r\nStack Size: ");   print_int(thread.stackEnd-thread.stackBase);
-   print_string("\r\nCurrent top of stack: ");print_hex(thread.stackPtr);
-   print_string("\r\nStack Base: ");   print_hex(thread.stackBase);
-   print_string("\r\nStack ENd: ");    print_hex(thread.stackEnd);
-} 
