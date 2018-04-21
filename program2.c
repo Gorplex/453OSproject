@@ -43,12 +43,14 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    sys->threads[sys->threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
    sys->threads[sys->threadCount].stackEnd =
       sys->threads[sys->threadCount].stackBase + stack_size + REGSIZE-1;
+
+   sys->threads[sys->threadCount].stackPtr = sys->threads[sys->threadCount].stackEnd
+      - sizeof(regs_context_switch);
    
    //init stack
-   regs = (regs_context_switch *) (sys->threads[sys->threadCount].stackEnd
-				   - sizeof( regs_context_switch));
+   regs = (regs_context_switch *) sys->threads[sys->threadCount].stackPtr;
    memset(regs, 0, sizeof(regs_context_switch));
-   sys->threads[sys->threadCount].stackPtr = (uint16_t) &(regs->padding);
+
 
    regs->pcl = (uint8_t) ((uint16_t)thread_start);
    regs->pch = (uint8_t) (((uint16_t)thread_start) >> 8);
@@ -67,6 +69,15 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    print_string("\n\r create thereadt");
    print_string("\n\r threadstrart: ");
    print_hex32(thread_start);
+
+   
+   print_string("\n\r ");
+   print_hex32(*(&sys->threads[0].stackEnd-1));
+   print_string("\t");
+   print_hex32(*(&sys->threads[0].stackEnd-2));
+   print_string("\t");
+   print_hex32(*(&sys->threads[0].stackEnd)-3);
+   print_string("\r\n");
 
    
 }
