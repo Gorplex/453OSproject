@@ -3,10 +3,10 @@
 #DEVICE = /dev/tty.usbmodem1431
 
 #Linux (/dev/ttyACM0 or possibly /dev/ttyUSB0)
-DEVICE = /dev/ttyACM0 
+#DEVICE = /dev/ttyACM0 
 
 #Windows
-#DEVICE = COM10 
+DEVICE = COM12 
 
 #default target to compile the code
 default: main
@@ -14,11 +14,11 @@ default: main
 1: lab1_part1 program
 2: lab1_part2 program
 3: lab1_part3 program
-p: program2 program
+p2: program2 program
 
 
-%: %.c serial.c blinkLED.c
-	avr-gcc -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^
+%: %.c serial.c blinkLED.c program2.h
+	avr-gcc -g -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^
 	avr-objcopy -O ihex main.elf main.hex
 	avr-size main.elf
 

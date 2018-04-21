@@ -1,6 +1,7 @@
 #ifndef PROGRAM2_H
 #define PROGRAM2_H
 
+#include "globals.h"
 
 //This structure defines the register order pushed to the stack on a
 //system context switch.
@@ -66,11 +67,9 @@ typedef struct thread_t {
    uint8_t id;
    char * name;
    uint16_t pc;
-   uint16_t stackUsage;
-   uint16_t stackSize;
-   uint16_t stackTop;
+   uint16_t stackPtr;
    uint16_t stackBase;
-   uint16_t *  stackPtr;
+   uint16_t stackEnd;
 } thread_t;
 
 typedef struct system_t {
@@ -88,7 +87,6 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 void os_start(void);
 uint8_t get_next_thread(void);
 void thread_start(void);
-
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp);
 
 
