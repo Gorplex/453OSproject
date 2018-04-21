@@ -61,7 +61,6 @@ void print_string(char* s){
 
 void print_int(uint16_t i){
     uint16_t denom = 10000; 
-    
     while(denom != 0){
         write_byte((uint8_t)(i/denom + OFFSET_DIG));
         i = i%denom;
@@ -70,11 +69,11 @@ void print_int(uint16_t i){
 }
 
 void print_int32(uint32_t i){
-    print_int(*(((uint16_t *) &i)+1));
-    print_int(*((uint16_t *) &i));
+   print_int(*(((uint16_t *) &i)+1));
+   print_int(*((uint16_t *) &i));
 }
 
-void print_hex(uint16_t i){
+void print_hex_raw(uint16_t i){
     uint16_t temp;
     uint8_t j=4;
     while(j){
@@ -89,9 +88,15 @@ void print_hex(uint16_t i){
     }
 }
 
+void print_hex(uint16_t i){
+   print_string("0x");
+   print_hex_raw(i);
+}
+
 void print_hex32(uint32_t i){
-    print_hex(*(((uint16_t *) &i)+1));
-    print_hex(*((uint16_t *) &i));
+   print_string("0x");
+   print_hex_raw(*(((uint16_t *) &i)+1));
+   print_hex_raw(*((uint16_t *) &i));
 }
 
 void set_cursor(uint8_t row, uint8_t col){
