@@ -5,9 +5,8 @@
 #include "blinkLED.h"
 #include "printThreads.h"
 
-#define REGSIZE 34  //17 ours? 32 total?
-
-//void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size);
+#define REGSIZE 50  //17 ours? 32 total?
+#define DEBUG if(1) 
 
 
 /* sys is now stored in heap space because of weird issue of sys not updating */
@@ -16,11 +15,10 @@ system_t * sys;
 int main(int argc, char **argv){
    serial_init();
    os_init();
-
+   
    create_thread("blink", (uint16_t) &blinkLEDMain, NULL, BLINK_LED_SIZE);
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
-
-   printSys(sys);
+   
    os_start();
 }
 
@@ -33,7 +31,7 @@ void os_init(){
 
 void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size){
    regs_context_switch * regs;
-
+   //setup sys thread
    sys->threads[sys->threadCount].name=name;
    sys->threads[sys->threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
    sys->threads[sys->threadCount].stackEnd =
@@ -42,20 +40,17 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    sys->threads[sys->threadCount].stackPtr = (sys->threads[sys->threadCount].stackEnd
       - sizeof(regs_context_switch));
    
-   //init stack
+   //setup stack
    regs = (regs_context_switch *) sys->threads[sys->threadCount].stackPtr;
    memset(regs, 0, sizeof(regs_context_switch));
-
 
    regs->pcl = (uint8_t) ((uint16_t)thread_start);
    regs->pch = (uint8_t) (((uint16_t)thread_start) >> 8);
    //zero upper byte of PC
    regs->eind = 0;              
 
-   /* this is the stack */
    regs->r2 = (uint8_t) address; 
    regs->r3 = (uint8_t) (address >> 8); 
-
    regs->r4 = (uint8_t) ((uint16_t)args); 
    regs->r5 = (uint8_t) (((uint16_t)args) >> 8); 
 
@@ -63,13 +58,12 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 }
 
 void os_start(){
-   uint8_t next;
    uint16_t trash;
-   //print_string("start\r\n");
-   
-   next = get_next_thread();
-   sys->curThread = next;
-   context_switch(&(sys->threads[next].stackPtr), &trash);
+
+   DEBUG print_string("OS START\r\n");
+   sys->curThread = get_next_thread();
+   sei();
+   context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
    //should never get here
 }
 
@@ -78,7 +72,6 @@ uint8_t get_next_thread(){
 }
 
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
-   
    //push 
    asm volatile("push r2");
    asm volatile("push r3"); 
@@ -98,13 +91,11 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    asm volatile("push r17"); 
    asm volatile("push r28"); 
    asm volatile("push r29");
-   
-   
+
 
    //args are in r23,r22 (old) and r25,r24 (new)
    //stack pointer temp in r2,r3
    //Stack Pointer get->save->load->set
-
    
    //SAVE SP
    //get low SP
@@ -158,29 +149,16 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    asm volatile("pop r3"); 
    asm volatile("pop r2");
 
-   /*print_string("context");
-
-   print_string("\n\r pc h l: ");
-   print_string("\n\r ");
-   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-1)));
-   print_string("\t");
-   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-2)));
-   print_string("\t");
-   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-3)));
-   print_string("\n\r");
-   
-   print_string("\n\r addr check: ");
-   print_hex32(*((uint8_t*)(sys->threads[0].stackEnd-4)));
-   print_string("\n\r");
-   */
    //return
    asm volatile("ret");
 }
-
+//START SENG
 //This interrupt routine is automatically run every 10 milliseconds
 ISR(TIMER0_COMPA_vect) {
-   uint8_t next;
-   
+   //END SENG
+   uint8_t last;
+   print_string("\r\nIVE BEEN INTRUPTED\r\n");
+
    //START SENG
    //At the beginning of this ISR, the registers r0, r1, and r18-31 have 
    //already been pushed to the stack
@@ -200,10 +178,11 @@ ISR(TIMER0_COMPA_vect) {
    //END SENG
    
    sys->time++;
-   next = get_next_thread();
-   context_switch(&(sys->threads[next].stackPtr), &(sys->threads[sys->curThread].stackPtr));
-   sys->curThread = next;
-
+   last = sys->curThread;
+   sys->curThread = get_next_thread();
+   sei();
+   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
+   print_string("\r\nasdddddddddddddddddddddddddddddddddfadfsdsfdsfsdfsdf\r\n");
 }
 
 //START SENG

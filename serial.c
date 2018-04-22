@@ -61,7 +61,7 @@ void print_string(char* s){
 
 void print_int_padded(uint16_t i){
     uint16_t denom = 10000u; 
-    while(denom != 0){
+    while(denom!=0){
         write_byte((uint8_t)(i/denom + OFFSET_DIG));
         i = i%denom;
         denom = denom/10;
@@ -69,8 +69,8 @@ void print_int_padded(uint16_t i){
 }
 void print_int(uint16_t i){
    uint16_t denom = 10000u; 
-   while(denom != 0){
-      if(i/denom != 0){
+   while(denom!=0){
+      if(i/denom!=0 || denom==1){
          write_byte((uint8_t)(i/denom + OFFSET_DIG));
       }
       i = i%denom;
@@ -80,7 +80,7 @@ void print_int(uint16_t i){
 
 void print_int32_padded(uint32_t i){
     uint32_t denom = 1000000000u; 
-    while(denom != 0){
+    while(denom!=0 || denom==1){
         write_byte((uint8_t)(i/denom + OFFSET_DIG));
         i = i%denom;
         denom = denom/10;
