@@ -1,7 +1,5 @@
 #include "globals.h"
 
-int currentDelay = 1000;
-
 void delays(int n){
    while(n){
       _delay_ms(20);
@@ -35,14 +33,13 @@ void LED_off(){
    asm volatile("st     Z, r18");
 }
 
-void blinkLEDMain(uint16_t *delay){
+void blinkLEDMain(uint16_t delay){
    set_output();
-   
    while(1){
       LED_on();
-      delays(currentDelay);
+      delays(delay);
       LED_off();
-      delays(currentDelay);
+      delays(delay);
    }
 }
 

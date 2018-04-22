@@ -8,21 +8,24 @@
 #define REGSIZE 50  //17 ours? 32 total?
 #define DEBUG if(1) 
 
-
 /* sys is now stored in heap space because of weird issue of sys not updating */
 system_t * sys;
 
 int main(int argc, char **argv){
    serial_init();
+   clear_screen();
    os_init();
-   
-   create_thread("blink", (uint16_t) &blinkLEDMain, NULL, BLINK_LED_SIZE);
+
+   create_thread("blink", (uint16_t) &blinkLEDMain, (void *)BLINK_LED_DELAY, BLINK_LED_SIZE);
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    
    os_start();
 }
 
 void os_init(){
+   cli();
+   start_system_timer();
+   cli();
    sys = malloc(sizeof(system_t));
    sys->curThread=-1;
    sys->threadCount=0;
@@ -51,7 +54,7 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 
    regs->r2 = (uint8_t) address; 
    regs->r3 = (uint8_t) (address >> 8); 
-   regs->r4 = (uint8_t) ((uint16_t)args); 
+   regs->r4 = (uint8_t) (uint16_t) args; 
    regs->r5 = (uint8_t) (((uint16_t)args) >> 8); 
 
    sys->threadCount++;
@@ -60,7 +63,6 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 void os_start(){
    uint16_t trash;
 
-   DEBUG print_string("OS START\r\n");
    sys->curThread = get_next_thread();
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
@@ -157,7 +159,6 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
 ISR(TIMER0_COMPA_vect) {
    //END SENG
    uint8_t last;
-   print_string("\r\nIVE BEEN INTRUPTED\r\n");
 
    //START SENG
    //At the beginning of this ISR, the registers r0, r1, and r18-31 have 
@@ -182,7 +183,6 @@ ISR(TIMER0_COMPA_vect) {
    sys->curThread = get_next_thread();
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
-   print_string("\r\nasdddddddddddddddddddddddddddddddddfadfsdsfdsfsdfsdf\r\n");
 }
 
 //START SENG
@@ -202,7 +202,7 @@ __attribute__((naked)) void thread_start(void) {
    //ijump to given function address - (r2, r3) moved into Z vreg (r30, r31)
    //agrs moved from (r4, r5) to (r22, r23)
    asm volatile("movw r30, r2"); 
-   asm volatile("movw r22, r4"); 
+   asm volatile("movw r24, r4"); 
    asm volatile("ijmp");
 }
 

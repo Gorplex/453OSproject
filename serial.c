@@ -68,9 +68,11 @@ void print_int_padded(uint16_t i){
     }
 }
 void print_int(uint16_t i){
-   uint16_t denom = 10000u; 
+   uint16_t denom = 10000u;
+   uint8_t flag = 0;
    while(denom!=0){
-      if(i/denom!=0 || denom==1){
+      if(flag || i/denom!=0 || denom==1){
+         flag=1;
          write_byte((uint8_t)(i/denom + OFFSET_DIG));
       }
       i = i%denom;
@@ -80,7 +82,7 @@ void print_int(uint16_t i){
 
 void print_int32_padded(uint32_t i){
     uint32_t denom = 1000000000u; 
-    while(denom!=0 || denom==1){
+    while(denom!=0){
         write_byte((uint8_t)(i/denom + OFFSET_DIG));
         i = i%denom;
         denom = denom/10;
@@ -89,8 +91,10 @@ void print_int32_padded(uint32_t i){
 
 void print_int32(uint32_t i){
    uint32_t denom = 1000000000u; 
+   uint8_t flag = 0;
    while(denom != 0){
-      if(i/denom != 0){
+      if(flag || i/denom != 0 || denom==1){
+         flag=1;
          write_byte((uint8_t)(i/denom + OFFSET_DIG));
       }
       i = i%denom;
@@ -112,16 +116,43 @@ void print_hex_raw(uint16_t i){
         j--;
     }
 }
-
 void print_hex(uint16_t i){
    print_string("0x");
-   print_hex_raw(i);
+   uint16_t temp;
+   uint8_t j=4;
+   uint8_t flag=0;
+   while(j){
+      temp = i >> 12;
+      if(flag || temp!=0 || j==1){
+         flag=1;
+         if(temp <= 9){
+            write_byte(temp + OFFSET_DIG);
+         }else{
+            write_byte(temp + OFFSET_HEX);
+         }
+      }
+      i = i<<4;
+      j--;
+   }
 }
-
 void print_hex32(uint32_t i){
    print_string("0x");
-   print_hex_raw(*(((uint16_t *) &i)+1));
-   print_hex_raw(*((uint16_t *) &i));
+   uint32_t temp;
+   uint8_t j=8;
+   uint8_t flag=0;
+   while(j){
+      temp = i >> 28;
+      if(flag || temp!=0 || j==1){
+         flag=1;
+         if(temp <= 9){
+            write_byte(temp + OFFSET_DIG);
+         }else{
+            write_byte(temp + OFFSET_HEX);
+         }
+      }
+      i = i<<4;
+      j--;
+   }
 }
 
 void set_cursor(uint8_t row, uint8_t col){
@@ -145,6 +176,7 @@ void clear_screen(){
     write_byte('[');
     write_byte('2');
     write_byte('J');
+    set_cursor(1,1);
 }
 
 void set_cursor_home(){

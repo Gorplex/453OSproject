@@ -87,6 +87,6 @@ void os_start(void);
 uint8_t get_next_thread(void);
 void thread_start(void);
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp);
-
+void start_system_timer();
 
 #endif
