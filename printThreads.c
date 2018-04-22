@@ -4,8 +4,8 @@
 
 void printThread(thread_t thread) {
    print_string("\r\nThread Name: ");           print_string(thread.name);
-   print_string("\r\nThread PC: 0x");           print_hex(thread.pc);
-   /*print_string("Stack Usage: ");               print_int(thread.stackEnd-thread.stackBase);*/
+   print_string("\r\nThread PC: ");             print_hex(thread.pc);
+   print_string("Stack Usage: ");               print_int(thread.stackEnd-thread.stackPtr);
    print_string("\r\nStack Size: ");            print_int(thread.stackEnd-thread.stackBase);
    print_string("\r\nCurrent top of stack: ");  print_hex(thread.stackPtr);
    print_string("\r\nStack Base: ");            print_hex(thread.stackBase);
