@@ -33,13 +33,13 @@ void LED_off(){
    asm volatile("st     Z, r18");
 }
 
-void blinkLEDMain(uint16_t delay){
+void blinkLEDMain(uint16_t *delay){
    set_output();
    while(1){
       LED_on();
-      delays(delay);
+      delays(*delay);
       LED_off();
-      delays(delay);
+      delays(*delay);
    }
 }
 

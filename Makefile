@@ -6,7 +6,7 @@
 #DEVICE = /dev/ttyACM0 
 
 #Windows
-DEVICE = COM12 
+DEVICE = COM10 
 
 #default target to compile the code
 default: main
