@@ -34,16 +34,15 @@ void LED_off(){
 }
 
 void blinkLEDMain(uint16_t *delay){
+   //to prevent optomising out delay
+   volatile uint16_t d = *delay;
+
    set_output();
-   //this print is here to make the code work
-   //without this print the LED is solid on
-   //optomising out the call to delay??
-   print_string("");
    while(1){
       LED_on();
-      delays(*delay);
+      delays(d);
       LED_off();
-      delays(*delay);
+      delays(d);
    }
 }
 
