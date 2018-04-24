@@ -1,6 +1,6 @@
-#include "globals.h"
+#include "blinkLed.h"
 
-void delays(int n){
+void delays(uint16_t n){
    while(n){
       _delay_ms(20);
       n-=20;
@@ -35,6 +35,10 @@ void LED_off(){
 
 void blinkLEDMain(uint16_t *delay){
    set_output();
+   //this print is here to make the code work
+   //without this print the LED is solid on
+   //optomising out the call to delay??
+   print_string("");
    while(1){
       LED_on();
       delays(*delay);
@@ -43,3 +47,25 @@ void blinkLEDMain(uint16_t *delay){
    }
 }
 
+void check_key(uint16_t *delay){
+    if(byte_available()){
+        switch(read_byte()){
+            case 'a':
+            *delay-=20;
+            if(*delay <= 0){
+                *delay = 20;
+            }
+            break;
+            case 'z':
+            *delay+=20;
+            break;
+        }
+    }
+}
+
+void setLEDMain(uint16_t *delay){
+   serial_init(); 
+   while(1){
+      check_key(delay);   
+   }
+}
