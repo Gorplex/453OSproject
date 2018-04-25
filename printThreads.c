@@ -3,12 +3,19 @@
 
 
 void printThread(thread_t thread) {
+   set_color(RED);
    print_string("\r\nThread Name: ");           print_string(thread.name);
+   set_color(GREEN);
    print_string("\r\nThread PC: ");             print_hex(thread.pc);
+   set_color(BLUE);
    print_string("\r\nStack Usage: ");               print_int(thread.stackEnd-thread.stackPtr);
+   set_color(YELLOW);
    print_string("\r\nStack Size: ");            print_int(thread.stackEnd-thread.stackBase);
+   set_color(MAGENTA);
    print_string("\r\nCurrent top of stack: ");  print_hex(thread.stackPtr);
+   set_color(CYAN);
    print_string("\r\nStack Base: ");            print_hex(thread.stackBase);
+   set_color(WHITE);
    print_string("\r\nStack End: ");             print_hex(thread.stackEnd);
    print_string("\r\n");
 } 

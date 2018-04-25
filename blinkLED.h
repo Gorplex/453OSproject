@@ -6,8 +6,8 @@
 
 #include "serial.h"
 
-#define BLINK_LED_SIZE 1000
-#define SET_LED_SIZE 1000
+#define BLINK_LED_SIZE 100
+#define SET_LED_SIZE 100
 #define BLINK_LED_DELAY 500
 
 void blinkLEDMain(uint16_t *delay);
