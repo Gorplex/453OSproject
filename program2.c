@@ -21,7 +21,7 @@ int main(int argc, char **argv){
 
    create_thread("blink", (uint16_t) &blinkLEDMain, &delay, BLINK_LED_SIZE);
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
-   //create_thread("setLED", (uint16_t) &setLEDMain, &delay, SET_LED_SIZE);
+   create_thread("setLED", (uint16_t) &setLEDMain, &delay, SET_LED_SIZE);
    
    os_start();
 }

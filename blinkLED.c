@@ -38,7 +38,9 @@ void blinkLEDMain(uint16_t *delay){
    volatile uint16_t d = *delay;
 
    set_output();
+   //print_string("");
    while(1){
+      //d = *delay;
       LED_on();
       delays(d);
       LED_off();
