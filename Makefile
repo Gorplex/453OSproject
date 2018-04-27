@@ -38,7 +38,7 @@ handinLuke: *.c *.h Makefile
 
 
 handinJohn:
-	scp *.c *.h Makefile jmthomse@unix3.csc.calpoly.edu:~/cpe453/l/1
+	scp *.c *.h Makefile jmthomse@unix3.csc.calpoly.edu:~/cpe453/p/2
 	ssh jmthomse@unix3.csc.calpoly.edu "cd ~/cpe453/p/2; handin jseng 453_program2_7 *"
 
 
