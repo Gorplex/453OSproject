@@ -1,3 +1,4 @@
+/* Written: Luke Thompson and John Thomsen */
 #ifndef BLINKLED_H
 #define BLINKLED_H
 

@@ -1,3 +1,4 @@
+/* Written: Luke Thompson and John Thomsen */
 #include "blinkLed.h"
 
 void delays(uint16_t n){

@@ -1,3 +1,4 @@
+/* Written: Luke Thompson and John Thomsen and John Seng */
 #include <avr/io.h>
 #include "globals.h"
 

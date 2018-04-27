@@ -1,3 +1,5 @@
+/* Written: Luke Thompson and John Thomsen */
+
 #include <string.h>
 
 #include "globals.h"

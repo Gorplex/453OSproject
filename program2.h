@@ -1,3 +1,4 @@
+/* Written: Luke Thompson and John Thomsen and John Seng*/
 #ifndef PROGRAM2_H
 #define PROGRAM2_H
 

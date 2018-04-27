@@ -1,3 +1,4 @@
+/* Written: Luke Thompson and John Thomsen */
 #ifndef SERIAL
 #define SERIAL
 

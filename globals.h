@@ -1,3 +1,4 @@
+/* Written: Luke Thompson and John Thomsen */
 //Global defines
 
 #ifndef GLOBALS_H
