@@ -41,6 +41,7 @@ void blinkLEDMain(uint16_t *delay){
    set_output();
    //print_string("");
    while(1){
+      //for updating with setLED thread (needs empty print above to update)
       //d = *delay;
       LED_on();
       delays(d);

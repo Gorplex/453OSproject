@@ -1,10 +1,6 @@
 /* Written: Luke Thompson and John Thomsen and John Seng */
-#include <avr/io.h>
-#include "globals.h"
 
-#define OFFSET_DIG 48
-#define OFFSET_HEX 55
-#define ESC 0x1B
+#include "serial.h"
 
 /*
  * Initialize the serial port.

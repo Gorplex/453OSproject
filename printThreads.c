@@ -1,8 +1,6 @@
 /* Written: Luke Thompson and John Thomsen */
 #include "printThreads.h"
 
-
-
 void printThread(thread_t thread) {
    set_color(RED);
    print_string("\r\nThread Name: "); set_color(BR_RED);     print_string(thread.name);

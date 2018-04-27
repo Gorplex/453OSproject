@@ -1,13 +1,11 @@
 /* Written: Luke Thompson and John Thomsen */
 
-#include <string.h>
-
 #include "os.h"
 
-#define REGSIZE 20  //17 ours
+/* sys is now stored in heap space because of weird issue of sys not updating */
+system_t * sys;
 
-
-void os_init(){
+system_t * os_init(){
    cli();
    start_system_timer();
    cli();
@@ -15,6 +13,7 @@ void os_init(){
    sys->curThread=-1;
    sys->threadCount=0;
    sys->time=0;
+   return sys;
 }
 
 void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size){

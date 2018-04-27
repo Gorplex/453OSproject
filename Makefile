@@ -17,7 +17,7 @@ default: main
 p2: program2 program
 
 
-%: %.c serial.c blinkLED.h blinkLED.c program2.h program2.c printThreads.c
+%: %.c serial.c  serial.h blinkLED.h blinkLED.c os.c os.h program2.c printThreads.c
 	avr-gcc -g -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^
 	avr-objcopy -O ihex main.elf main.hex
 	avr-size main.elf

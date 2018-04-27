@@ -1,7 +1,8 @@
 /* Written: Luke Thompson and John Thomsen */
 #ifndef PRINT_THREAD_H
 #define PRINT_THREAD_H
-#include "program2.h"
+#include "os.h"
+#include "serial.h"
 
 #define PRINT_THREAD_SIZE 100
 void printThread(thread_t thread);

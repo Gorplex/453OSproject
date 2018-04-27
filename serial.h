@@ -2,6 +2,13 @@
 #ifndef SERIAL
 #define SERIAL
 
+#include <stdint.h>
+#include <avr/io.h>
+
+#define OFFSET_DIG 48
+#define OFFSET_HEX 55
+#define ESC 0x1B
+
 #define RESET       0
 
 #define RED         31

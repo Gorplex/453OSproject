@@ -2,6 +2,13 @@
 #ifndef OS_H
 #define OS_H
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <avr/interrupt.h>
+#include <string.h>
+
+#define REGSIZE 20  //17 ours
+
 //This structure defines the register order pushed to the stack on a
 //system context switch.
 typedef struct regs_context_switch {
@@ -80,7 +87,7 @@ typedef struct system_t {
 
 
 
-void os_init(void);
+system_t * os_init(void);
 void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size);
 void os_start(void);
 uint8_t get_next_thread(void);
