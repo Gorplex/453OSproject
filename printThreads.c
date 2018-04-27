@@ -5,19 +5,19 @@
 
 void printThread(thread_t thread) {
    set_color(RED);
-   print_string("\r\nThread Name: "); set_color(BR_RED); print_string(thread.name);
+   print_string("\r\nThread Name: "); set_color(BR_RED);     print_string(thread.name);
    set_color(GREEN);
-   print_string("\r\nThread PC: ");     set_color(BR_GREEN);         print_hex(thread.pc);
+   print_string("\r\nThread PC: ");   set_color(BR_GREEN);   print_hex(thread.pc);
    set_color(YELLOW);
-   print_string("\r\nStack Usage: ");   set_color(BR_YELLOW);             print_int(thread.stackEnd-thread.stackPtr);
+   print_string("\r\nStack Usage: "); set_color(BR_YELLOW);  print_int(thread.stackEnd-thread.stackPtr);
    set_color(BLUE);
-   print_string("\r\nStack Size: ");   set_color(BR_BLUE);          print_int(thread.stackEnd-thread.stackBase);
+   print_string("\r\nStack Size: ");  set_color(BR_BLUE);    print_int(thread.stackEnd-thread.stackBase);
    set_color(MAGENTA);
    print_string("\r\nCurrent top of stack: "); set_color(BR_BLUE);  set_color(BR_MAGENTA); print_hex(thread.stackPtr);
    set_color(CYAN);
-   print_string("\r\nStack Base: "); set_color(BR_CYAN);            print_hex(thread.stackBase);
+   print_string("\r\nStack Base: ");  set_color(BR_CYAN);    print_hex(thread.stackBase);
    set_color(WHITE);
-   print_string("\r\nStack End: ");   set_color(BR_WHITE);           print_hex(thread.stackEnd);
+   print_string("\r\nStack End: ");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
    print_string("\r\n");
 } 
 
