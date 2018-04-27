@@ -32,8 +32,13 @@ clean:
 	rm -fr *.elf *.hex *.o
 
 #luke stuff
-handin:
+handinLuke: *.c *.h Makefile
+	scp $^ calpoly3:~/cpe453/p2_threads
+	ssh calpoly3 "cd ~/cpe453/p2_threads; handin jseng 453_program2_7 *"
+
+
+handinJohn:
 	scp *.c *.h Makefile jmthomse@unix3.csc.calpoly.edu:~/cpe453/l/1
-	ssh jmthomse@unix3.csc.calpoly.edu "cd ~/cpe453/l/1; handin jseng 453_lab1_7 *"
+	ssh jmthomse@unix3.csc.calpoly.edu "cd ~/cpe453/p/2; handin jseng 453_program2_7 *"
 
 
