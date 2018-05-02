@@ -14,8 +14,6 @@ DEVICE = COM10
 #default target to compile the code
 default: p3a
 
-p: p3a
-p3: p3a
 p3a: program3a program
 p3b: program3b program
 

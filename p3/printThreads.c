@@ -20,8 +20,6 @@ void printThread(thread_t thread) {
 } 
 
 void printSys(system_t * sys) {
-
-   serial_init()
    set_cursor(1,1);
    set_color(CYAN);
    print_string("Program 3\r\n");

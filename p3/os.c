@@ -13,6 +13,10 @@ system_t * os_init(){
    sys->curThread=0;    // was -1,0 now 0,1
    sys->threadCount=1;  //main is now a thread
    sys->time=0;
+   sys->threads[0].name="main";
+   sys->threads[0].stackBase=0;
+   sys->threads[0].stackEnd=0;
+   sys->threads[0].stackPtr=0;
    return sys;
 }
 
@@ -46,7 +50,7 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 
 void os_start(){
    uint16_t last;
-   //main is now save as a thread and returned to
+   //main is now saved as a thread and returned to
    last = sys->curThread;
    sys->curThread = get_next_thread();
    sei();
