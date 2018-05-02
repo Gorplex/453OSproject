@@ -1,4 +1,5 @@
-HEADERS=os.h synchro.h
+HEADERS = os.h synchro.h printThreads.h serial.h
+CFILES  = os.c synchro.c printThreads.c serial.c
 
 #Change this variable to point to your Arduino device
 #Mac - it may be different
@@ -11,15 +12,14 @@ HEADERS=os.h synchro.h
 DEVICE = COM10 
 
 #default target to compile the code
-default: main
+default: p3a
 
-1: lab1_part1 program
-2: lab1_part2 program
-3: lab1_part3 program
-p2: program2 program
-p3: program3 program
+p: p3a
+p3: p3a
+p3a: program3a program
+p3b: program3b program
 
-%: %.c $(HEADERS)
+%: %.c $(HEADERS) $(CFILES)
 	avr-gcc -g -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^
 	avr-objcopy -O ihex main.elf main.hex
 	avr-size main.elf

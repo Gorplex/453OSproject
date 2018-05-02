@@ -10,8 +10,8 @@ system_t * os_init(){
    start_system_timer();
    cli();
    sys = malloc(sizeof(system_t));
-   sys->curThread=-1;
-   sys->threadCount=0;
+   sys->curThread=0;    // was -1,0 now 0,1
+   sys->threadCount=1;  //main is now a thread
    sys->time=0;
    return sys;
 }
@@ -45,12 +45,12 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 }
 
 void os_start(){
-   uint16_t trash;
-
+   uint16_t last;
+   //main is now save as a thread and returned to
+   last = sys->curThread;
    sys->curThread = get_next_thread();
    sei();
-   context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
-   //should never get here
+   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
 
 uint8_t get_next_thread(){

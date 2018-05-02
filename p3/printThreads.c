@@ -23,7 +23,7 @@ void printSys(system_t * sys) {
 
    set_cursor(1,1);
    set_color(CYAN);
-   print_string("Program 2\r\n");
+   print_string("Program 3\r\n");
    print_string("System Time: ");               print_int(sys->time/100);
    print_string("\r\nNumber of Threads: ");     print_int(sys->threadCount);
 
@@ -38,9 +38,9 @@ void printSys(system_t * sys) {
 }
 
 void printThreadsMain(uint16_t * sys){
+   serial_init();
    clear_screen();
    while(1) {
-
       printSys( (system_t *) sys);
    }
 }

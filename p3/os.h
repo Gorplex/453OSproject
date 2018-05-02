@@ -7,7 +7,7 @@
 #include <avr/interrupt.h>
 #include <string.h>
 
-#define REGSIZE 20  //17 ours
+#define REGSIZE 45  //41 used with empty function
 
 //This structure defines the register order pushed to the stack on a
 //system context switch.
@@ -75,6 +75,8 @@ typedef struct thread_t {
    uint16_t stackPtr;
    uint16_t stackBase;
    uint16_t stackEnd;
+   uint16_t thread_status;
+   uint16_t sched_count;
 } thread_t;
 
 typedef struct system_t {
@@ -82,10 +84,7 @@ typedef struct system_t {
    int8_t curThread;
    uint8_t threadCount;
    uint32_t time;
-   
 } system_t;
-
-
 
 system_t * os_init(void);
 void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size);
