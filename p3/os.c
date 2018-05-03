@@ -28,9 +28,10 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    sys->threads[sys->threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
    sys->threads[sys->threadCount].stackEnd =
       sys->threads[sys->threadCount].stackBase + stack_size + REGSIZE;
-
    sys->threads[sys->threadCount].stackPtr = (sys->threads[sys->threadCount].stackEnd
       - sizeof(regs_context_switch));
+   sys->threads[sys->threadCount].thread_status=THREAD_READY;
+   sys->threads[sys->threadCount].sched_count=0;
    
    //setup stack
    regs = (regs_context_switch *) sys->threads[sys->threadCount].stackPtr;
@@ -173,16 +174,26 @@ ISR(TIMER0_COMPA_vect) {
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
+ISR(TIMER1_COMPA_vect) {
+   //This interrupt routine is run once a second
+   //The 2 interrupt routines will not interrupt each other
+}
+
 
 //START SENG
-//Call this to start the system timer interrupt
 void start_system_timer() {
+   //start timer 0 for OS system interrupt
    TIMSK0 |= _BV(OCIE0A);  //interrupt on compare match
    TCCR0A |= _BV(WGM01);   //clear timer on compare match
 
    //Generate timer interrupt every ~10 milliseconds
-   TCCR0B |= _BV(CS02) | _BV(CS00) | _BV(CS02);    //prescalar /1024
+   TCCR0B |= _BV(CS02) | _BV(CS00);    //prescalar /1024
    OCR0A = 156;             //generate interrupt every 9.98 milliseconds
+
+   //start timer 1 to generate interrupt every 1 second
+   OCR1A = 15625;
+   TIMSK1 |= _BV(OCIE1A);  //interrupt on compare
+   TCCR1B |= _BV(WGM12) | _BV(CS12) | _BV(CS10); //slowest prescalar /1024
 }
 
 __attribute__((naked)) void thread_start(void) {

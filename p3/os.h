@@ -9,6 +9,12 @@
 
 #define REGSIZE 45  //41 used with empty function
 
+#define THREAD_RUNNING  0     //thread is currently running
+#define HREAD_READY     1     //thread is ready to be run
+#define HREAD_SLEEPING  2     //set from call to thread_sleep()
+#define HREAD_WAITING   3     //waiting on mutex or semaphore
+
+
 //This structure defines the register order pushed to the stack on a
 //system context switch.
 typedef struct regs_context_switch {
@@ -93,5 +99,10 @@ uint8_t get_next_thread(void);
 void thread_start(void);
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp);
 void start_system_timer();
+
+//project 3
+void thread_sleep(uint16_t ticks);
+
+
 
 #endif
