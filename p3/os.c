@@ -14,6 +14,7 @@ system_t * os_init(){
    sys->threadCount=1;  //main is now a thread
    sys->time=0;
    sys->threads[0].name="main";
+   sys->threads[0].pc=0;
    sys->threads[0].stackBase=0;
    sys->threads[0].stackEnd=0;
    sys->threads[0].stackPtr=0;
