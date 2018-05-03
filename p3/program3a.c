@@ -3,19 +3,53 @@
 #include "os.h"
 #include "printThreads.h"
 
-
-#define BUF_SIZE 50
-
 #define BUF_TS 50
-#define PROD_TS 50
-#define CONS_TS 50
-#define BLINK_TS 5
+#define PROD_TS 5
+#define CONS_TS 5
+#define BLINK_TS 0
+
+#define BUF_SIZE 50        //circular queue
+#define BASE_DELAY 1000    //ms
+#define MS_PER_TICK 10
+#define DELAY_INREMENT 50 //ms each keypress
+
+
 
 typedef struct buffer_t {
+   uint16_t prod_delay;
+   uint16_t cons_delay;
+   uint16_t start;
    uint16_t size;
    uint16_t buf[BUF_SIZE];
 } buffer_t;
 
+void display_bounded_buffer(buffer_t *buf){
+
+}
+void producer(buffer_t *buf){
+   while(1){
+      if(buf->size < BUF_SIZE){
+         //make a number at [start+size]
+         buf->size++;
+         //thread_sleep(buf->prod_delay/MS_PER_TICK)
+      }else{
+         //wait for consumer
+      }
+   }
+}
+
+void consumer(buffer_t *buf){
+   while(1){
+      if(buf->size){
+         //remove a number at [start]
+         buf->start=(buf->start+1)%BUF_SIZE;
+         buf->size--;
+         //thread_sleep(buf->cons_delay/MS_PER_TICK)
+      }else{
+         //wait for producer
+      }
+   }
+}
 
 //BLINK LED CODE
 void LED_init(){
@@ -41,9 +75,7 @@ void LED_off(){
    asm volatile("andi r18, 0x7f");
    asm volatile("st     Z, r18");
 }
-void blink(uint16_t * buffer){
-   buffer_t *buf;
-   buf=(buffer_t *)buffer;
+void blink(buffer_t *buf){
    LED_init();
    while(1){
       if(buf->size < BUF_SIZE){
@@ -54,15 +86,19 @@ void blink(uint16_t * buffer){
    }
 }
 
-
 int main(int argc, char **argv){
    system_t * sys;
    buffer_t * buf;
 
    sys = os_init();
+   buf->prod_delay=BASE_DELAY;
+   buf->cons_delay=BASE_DELAY;
+   buf->start=0;
    buf->size=0;
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
+   create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
+   create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
    create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
    
    os_start();
