@@ -10,9 +10,9 @@
 #define REGSIZE 45  //41 used with empty function
 
 #define THREAD_RUNNING  0     //thread is currently running
-#define HREAD_READY     1     //thread is ready to be run
-#define HREAD_SLEEPING  2     //set from call to thread_sleep()
-#define HREAD_WAITING   3     //waiting on mutex or semaphore
+#define THREAD_READY     1     //thread is ready to be run
+#define THREAD_SLEEPING  2     //set from call to thread_sleep()
+#define THREAD_WAITING   3     //waiting on mutex or semaphore
 
 
 //This structure defines the register order pushed to the stack on a
@@ -83,6 +83,7 @@ typedef struct thread_t {
    uint16_t stackEnd;
    uint16_t thread_status;
    uint16_t sched_count;
+   uint16_t sleep_timer;
 } thread_t;
 
 typedef struct system_t {

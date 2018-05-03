@@ -18,6 +18,9 @@ system_t * os_init(){
    sys->threads[0].stackBase=0;
    sys->threads[0].stackEnd=0;
    sys->threads[0].stackPtr=0;
+   sys->threads[0].thread_status=THREAD_RUNNING;
+   sys->threads[0].sched_count=0;
+   sys->threads[0].sleep_timer=0;
    return sys;
 }
 
@@ -32,6 +35,7 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
       - sizeof(regs_context_switch));
    sys->threads[sys->threadCount].thread_status=THREAD_READY;
    sys->threads[sys->threadCount].sched_count=0;
+   sys->threads[sys->threadCount].sleep_timer=0;
    
    //setup stack
    regs = (regs_context_switch *) sys->threads[sys->threadCount].stackPtr;
@@ -55,6 +59,8 @@ void os_start(){
    //main is now saved as a thread and returned to
    last = sys->curThread;
    sys->curThread = get_next_thread();
+   sys->threads[last].thread_status = THREAD_READY;
+   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
@@ -171,6 +177,8 @@ ISR(TIMER0_COMPA_vect) {
    sys->time++;
    last = sys->curThread;
    sys->curThread = get_next_thread();
+   sys->threads[last].thread_status = THREAD_READY;
+   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
