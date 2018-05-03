@@ -187,7 +187,6 @@ ISR(TIMER1_COMPA_vect) {
    //The 2 interrupt routines will not interrupt each other
 }
 
-
 //START SENG
 void start_system_timer() {
    //start timer 0 for OS system interrupt
@@ -214,3 +213,22 @@ __attribute__((naked)) void thread_start(void) {
    asm volatile("ijmp");
 }
 
+//project 3
+//currently passes (does nothing with 0)
+//anything less than MS_PER_TICK is equivlent to yeild() (with some overhead)
+void thread_sleep(uint16_t ticks){
+   if(ticks){
+      sys->threads[sys->curThread].sleepTimer=ticks;
+      sys->threads[sys->curThread].thread_status=THREAD_SLEEPING;
+      yeild();
+      //RETURN HER CHECK CURRENT 
+   }
+}
+
+void yield(){
+   
+}
+
+uint16_t get_thread_id(){
+   
+}

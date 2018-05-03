@@ -10,10 +10,11 @@
 #define REGSIZE 45  //41 used with empty function
 
 #define THREAD_RUNNING  0     //thread is currently running
-#define THREAD_READY     1     //thread is ready to be run
-#define THREAD_SLEEPING  2     //set from call to thread_sleep()
-#define THREAD_WAITING   3     //waiting on mutex or semaphore
+#define THREAD_READY     1    //thread is ready to be run
+#define THREAD_SLEEPING  2    //set from call to thread_sleep()
+#define THREAD_WAITING   3    //waiting on mutex or semaphore
 
+#define MS_PER_TICK 10        //10 ms between each thread swap
 
 //This structure defines the register order pushed to the stack on a
 //system context switch.
@@ -103,6 +104,8 @@ void start_system_timer();
 
 //project 3
 void thread_sleep(uint16_t ticks);
+void yield();
+uint16_t get_thread_id();
 
 
 

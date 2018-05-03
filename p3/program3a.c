@@ -10,7 +10,6 @@
 
 #define BUF_SIZE 50        //circular queue
 #define BASE_DELAY 1000    //ms
-#define MS_PER_TICK 10
 #define DELAY_INREMENT 50 //ms each keypress
 
 
