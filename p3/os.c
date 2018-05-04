@@ -179,7 +179,7 @@ ISR(TIMER0_COMPA_vect) {
    sys->curThread = get_next_thread();
    sys->threads[last].thread_status = THREAD_READY;
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sei();
+   sei();//CHECK
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
 ISR(TIMER1_COMPA_vect) {
@@ -215,9 +215,10 @@ __attribute__((naked)) void thread_start(void) {
 
 //project 3
 //currently passes (does nothing with 0)
-//anything less than MS_PER_TICK is equivlent to yeild() (with some overhead)
+//anything less than MS_PER_TICK is equivlent to yeild() (with some insignificant overhead)
 void thread_sleep(uint16_t ticks){
    if(ticks){
+      cli();
       sys->threads[sys->curThread].sleepTimer=ticks;
       sys->threads[sys->curThread].thread_status=THREAD_SLEEPING;
       yeild();
@@ -226,9 +227,20 @@ void thread_sleep(uint16_t ticks){
 }
 
 void yield(){
+   uint8_t last;
    
+   cli();
+   last = sys->curThread;
+   sys->curThread = get_next_thread();
+   if(sys->threads[last].thread_status == THREAD_RUNNING){
+      sys->threads[last].thread_status = THREAD_READY;
+   }
+   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
+   sei();
+   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
+
 }
 
 uint16_t get_thread_id(){
-   
+   return sys->curThread;   
 }
