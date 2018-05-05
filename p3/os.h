@@ -84,7 +84,7 @@ typedef struct thread_t {
    uint16_t stackEnd;
    uint16_t thread_status;
    uint16_t sched_count;
-   uint16_t sleep_timer;
+   uint16_t wakeup_time;
 } thread_t;
 
 typedef struct system_t {
@@ -92,6 +92,7 @@ typedef struct system_t {
    int8_t curThread;
    uint8_t threadCount;
    uint32_t time;
+   uint32_t mtime;
 } system_t;
 
 system_t * os_init(void);

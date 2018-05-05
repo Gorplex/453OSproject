@@ -13,14 +13,15 @@ system_t * os_init(){
    sys->curThread=0;    // was -1,0 now 0,1
    sys->threadCount=1;  //main is now a thread
    sys->time=0;
+   sys->mtime=0;
    sys->threads[0].name="main";
    sys->threads[0].pc=0;
    sys->threads[0].stackBase=0;
-   sys->threads[0].stackEnd=0;
+   sys->threads[0].stackEnd=0x21FF;
    sys->threads[0].stackPtr=0;
    sys->threads[0].thread_status=THREAD_RUNNING;
    sys->threads[0].sched_count=0;
-   sys->threads[0].sleep_timer=0;
+   sys->threads[0].wakeup_time=0;
    return sys;
 }
 
@@ -35,7 +36,7 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
       - sizeof(regs_context_switch));
    sys->threads[sys->threadCount].thread_status=THREAD_READY;
    sys->threads[sys->threadCount].sched_count=0;
-   sys->threads[sys->threadCount].sleep_timer=0;
+   sys->threads[sys->threadCount].wakeup_time=0;
    
    //setup stack
    regs = (regs_context_switch *) sys->threads[sys->threadCount].stackPtr;
@@ -65,8 +66,26 @@ void os_start(){
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
 
+//project 3 func
+void check_sleeping_threads(){
+   int i;
+   for(i=0;i<sys->threadCount;i++){
+      if(sys->threads[i].thread_status==THREAD_SLEEPING && 
+         sys->threads[i].wakeup_time <= sys->mtime){
+         sys->threads[i].wakeup_time = 0;
+         sys->threads[i].thread_status = THREAD_READY;
+      }
+   }
+}
+
 uint8_t get_next_thread(){
-   return (sys->curThread+1)%sys->threadCount;
+   uint8_t next;
+   check_sleeping_threads();
+   next = (sys->curThread+1)%sys->threadCount;
+   while(sys->threads[next].thread_status != THREAD_READY){
+      next = (next+1)%sys->threadCount;
+   }
+   return next;
 }
 
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
@@ -149,7 +168,9 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
 
    //return
    asm volatile("ret");
+
 }
+
 //START SENG
 //This interrupt routine is automatically run every 10 milliseconds
 ISR(TIMER0_COMPA_vect) {
@@ -174,7 +195,7 @@ ISR(TIMER0_COMPA_vect) {
    //and r0 before exiting the ISR
    //END SENG
    
-   sys->time++;
+   sys->mtime += MS_PER_TICK;
    last = sys->curThread;
    sys->curThread = get_next_thread();
    sys->threads[last].thread_status = THREAD_READY;
@@ -182,9 +203,11 @@ ISR(TIMER0_COMPA_vect) {
    sei();//CHECK
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
+
 ISR(TIMER1_COMPA_vect) {
    //This interrupt routine is run once a second
    //The 2 interrupt routines will not interrupt each other
+   sys->time++;
 }
 
 //START SENG
@@ -215,13 +238,13 @@ __attribute__((naked)) void thread_start(void) {
 
 //project 3
 //currently passes (does nothing with 0)
-//anything less than MS_PER_TICK is equivlent to yeild() (with some insignificant overhead)
+//anything less than MS_PER_TICK is equivlent to yield() (with some insignificant overhead)
 void thread_sleep(uint16_t ticks){
    if(ticks){
       cli();
-      sys->threads[sys->curThread].sleepTimer=ticks;
+      sys->threads[sys->curThread].wakeup_time = sys->mtime + ticks*MS_PER_TICK;
       sys->threads[sys->curThread].thread_status=THREAD_SLEEPING;
-      yeild();
+      yield();
       //RETURN HER CHECK CURRENT 
    }
 }
