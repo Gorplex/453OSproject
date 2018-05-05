@@ -274,7 +274,7 @@ void yield(){
    }
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sys->threads[sys->curThread].cur_count++;
-   sei();
+   sei();//CHECK
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 
 }
