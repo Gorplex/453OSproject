@@ -74,8 +74,6 @@ typedef struct regs_interrupt {
    uint8_t pcl;
 } regs_interrupt;
 
-
-
 typedef struct thread_t {
    char * name;
    uint16_t pc;
@@ -83,6 +81,7 @@ typedef struct thread_t {
    uint16_t stackBase;
    uint16_t stackEnd;
    uint16_t thread_status;
+   uint16_t cur_count;
    uint16_t sched_count;
    uint16_t wakeup_time;
 } thread_t;

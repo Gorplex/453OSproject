@@ -9,10 +9,8 @@
 #define BLINK_TS 0
 
 #define BUF_SIZE 50        //circular queue
-#define BASE_DELAY 1000    //ms
-#define DELAY_INREMENT 50 //ms each keypress
-
-
+#define BASE_DELAY 1000    //ms initial delay bewteen produceing and consuming
+#define DELAY_INREMENT 50  //ms each keypress
 
 typedef struct buffer_t {
    uint16_t prod_delay;
@@ -23,7 +21,10 @@ typedef struct buffer_t {
 } buffer_t;
 
 void display_bounded_buffer(buffer_t *buf){
+   //serial_init();
+   while(1){
 
+   }
 }
 void producer(buffer_t *buf){
    while(1){
@@ -96,10 +97,10 @@ int main(int argc, char **argv){
    buf->size=0;
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
-   create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
-   create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
-   create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
-   
+   //create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
+   //create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
+   //create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
+
    os_start();
    sei();      //just to be sure
    while(1){

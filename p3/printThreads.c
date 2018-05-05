@@ -16,6 +16,30 @@ void printThread(thread_t thread) {
    print_string("\r\nStack Base: ");  set_color(BR_CYAN);    print_hex(thread.stackBase);
    set_color(WHITE);
    print_string("\r\nStack End: ");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
+   /*set_color(RED);
+   print_string("\r\nThread Status: ");   set_color(BR_RED);   
+   switch(thread.thread_status){
+      case THREAD_RUNNING:
+      print_string("\r\nTHREAD RUNNING"); 
+      break;
+      case THREAD_READY:
+      print_string("\r\nTHREAD READY"); 
+      break;
+      case THREAD_SLEEPING:
+      print_string("\r\nTHREAD SLEEPING"); 
+      break;
+      case THREAD_WAITING:
+      print_string("\r\nTHREAD WAITING"); 
+      break;
+      default:
+      print_string("\r\nUNRECOGNIZED"); 
+      break;
+   }
+   set_color(GREEN);
+   print_string("\r\nWakup Time: ");   set_color(BR_GREEN);   print_hex(thread.sched_count);
+   set_color(YELLOW);
+   print_string("\r\nSchedule Count: ");   set_color(BR_YELLOW);   print_hex(thread.sched_count);
+   */
    print_string("\r\n");
 } 
 
@@ -37,6 +61,7 @@ void printSys(system_t * sys) {
 }
 
 void printThreadsMain(uint16_t * sys){
+   
    serial_init();
    clear_screen();
    while(1) {
