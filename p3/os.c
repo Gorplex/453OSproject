@@ -20,7 +20,7 @@ system_t * os_init(){
    sys->threads[0].stackEnd=0x21FF;
    sys->threads[0].stackPtr=0;
    sys->threads[0].thread_status=THREAD_RUNNING;
-   sys->threads[0].cur_count=0;
+   //sys->threads[0].cur_count=0;
    sys->threads[0].sched_count=0;
    sys->threads[0].wakeup_time=0;
    return sys;
@@ -36,7 +36,7 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    sys->threads[sys->threadCount].stackPtr = (sys->threads[sys->threadCount].stackEnd
       - sizeof(regs_context_switch));
    sys->threads[sys->threadCount].thread_status=THREAD_READY;
-   sys->threads[sys->threadCount].cur_count=0;
+   //sys->threads[sys->threadCount].cur_count=0;
    sys->threads[sys->threadCount].sched_count=0;
    sys->threads[sys->threadCount].wakeup_time=0;
    
@@ -64,7 +64,7 @@ void os_start(){
    sys->curThread = get_next_thread();
    sys->threads[last].thread_status = THREAD_READY;
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sys->threads[sys->curThread].cur_count++;
+   //sys->threads[sys->curThread].cur_count++;
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
@@ -85,9 +85,9 @@ uint8_t get_next_thread(){
    uint8_t next;
    check_sleeping_threads();
    next = (sys->curThread+1)%sys->threadCount;
-   //while(sys->threads[next].thread_status != THREAD_READY){
-   //   next = (next+1)%sys->threadCount;
-   //}
+   while(sys->threads[next].thread_status != THREAD_READY){
+      next = (next+1)%sys->threadCount;
+   }
    return next;
 }
 
@@ -203,19 +203,19 @@ ISR(TIMER0_COMPA_vect) {
    sys->curThread = get_next_thread();
    sys->threads[last].thread_status = THREAD_READY;
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sys->threads[sys->curThread].cur_count++;
+   //sys->threads[sys->curThread].cur_count++;
    sei();//CHECK
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
 
 //next two functions for p3
-void update_sched_count(){
+/*void update_sched_count(){
    int i;
    for(i=0;i<sys->threadCount;i++){
       sys->threads[i].sched_count = sys->threads[i].cur_count; 
       sys->threads[i].cur_count = 0; 
    }
-}
+}*/
 
 ISR(TIMER1_COMPA_vect) {
    //This interrupt routine is run once a second
@@ -273,7 +273,7 @@ void yield(){
       sys->threads[last].thread_status = THREAD_READY;
    }
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sys->threads[sys->curThread].cur_count++;
+   //sys->threads[sys->curThread].cur_count++;
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 

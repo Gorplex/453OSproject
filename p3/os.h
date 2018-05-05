@@ -7,6 +7,9 @@
 #include <avr/interrupt.h>
 #include <string.h>
 
+#define MAX_THREADS 8  //max threads
+#define TID_T uint8_t  //thread ID type (in case we need more than 15 threads
+
 #define REGSIZE 45  //41 used with empty function
 
 #define THREAD_RUNNING  0     //thread is currently running
@@ -74,6 +77,10 @@ typedef struct regs_interrupt {
    uint8_t pcl;
 } regs_interrupt;
 
+//very unusual bug if this struct is larger than 
+//17 bytes program breaks (prints x)
+//when system_t has thread_t threads[8]; 
+//rather than a pointer
 typedef struct thread_t {
    char * name;
    uint16_t pc;
@@ -81,15 +88,15 @@ typedef struct thread_t {
    uint16_t stackBase;
    uint16_t stackEnd;
    uint16_t thread_status;
-   uint16_t cur_count;
+   uint8_t cur_count;
    uint16_t sched_count;
    uint16_t wakeup_time;
 } thread_t;
 
 typedef struct system_t {
-   thread_t threads[8];
-   int8_t curThread;
-   uint8_t threadCount;
+   thread_t threads[MAX_THREADS];
+   TID_T curThread;
+   TID_T threadCount;
    uint32_t time;
    uint32_t mtime;
 } system_t;
