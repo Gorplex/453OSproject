@@ -36,7 +36,7 @@ void printThread(thread_t thread) {
       break;
    }
    set_color(GREEN);
-   print_string("\r\n\tWakup Time:\t");   set_color(BR_GREEN);   print_hex(thread.sched_count);
+   print_string("\r\n\tWakeup Time:\t");   set_color(BR_GREEN);   print_hex(thread.wakeup_time);
    set_color(YELLOW);
    print_string("\r\n\tSchedule Count: ");   set_color(BR_YELLOW);   print_hex(thread.sched_count);
    print_string("\r\n");
