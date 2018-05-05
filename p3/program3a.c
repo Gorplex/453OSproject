@@ -12,6 +12,8 @@
 #define BASE_DELAY 1000    //ms initial delay for producer and consumer
 #define DELAY_INREMENT 50  //ms each keypress
 
+#define RAND_RANGE 1000    //posible numbers between 0 and RAND_RANGE-1
+
 typedef struct buffer_t {
    uint16_t prod_delay;
    uint16_t cons_delay;
@@ -23,17 +25,19 @@ typedef struct buffer_t {
 void display_bounded_buffer(buffer_t *buf){
    //serial_init();
    while(1){
-
+      yield();
    }
 }
 void producer(buffer_t *buf){
    while(1){
       if(buf->size < BUF_SIZE){
          //make a number at [start+size]
+         buf->buf[buf->start+buf->size] = rand()%RAND_RANGE;
          buf->size++;
-         //thread_sleep(buf->prod_delay/MS_PER_TICK)
+         thread_sleep(buf->prod_delay/MS_PER_TICK);
       }else{
          //wait for consumer
+         yield();
       }
    }
 }
@@ -44,9 +48,10 @@ void consumer(buffer_t *buf){
          //remove a number at [start]
          buf->start=(buf->start+1)%BUF_SIZE;
          buf->size--;
-         //thread_sleep(buf->cons_delay/MS_PER_TICK)
+         thread_sleep(buf->cons_delay/MS_PER_TICK);
       }else{
          //wait for producer
+         yield();
       }
    }
 }
@@ -83,6 +88,7 @@ void blink(buffer_t *buf){
       }else{
          LED_off();
       }
+      yield();
    }
 }
 

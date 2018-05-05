@@ -4,7 +4,7 @@
 #include "os.h"
 #include "serial.h"
 
-#define PRINT_THREAD_SIZE 100
+#define PRINT_THREAD_SIZE 1000
 void printThread(thread_t thread);
 void printSys(system_t * sys);
 void printThreadsMain(uint16_t * sys);
