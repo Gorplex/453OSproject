@@ -27,7 +27,7 @@ typedef struct buffer_t {
 
 
 
-struct mutex_t * screem;		/* screen mutex */
+extern struct mutex_t * screem;		/* screen mutex */
 
 
 void display_bounded_buffer(buffer_t *buf){
