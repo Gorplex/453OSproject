@@ -56,6 +56,12 @@ void print_string(char* s){
     }
 }
 
+void print_cmd(char* s) {
+   write_byte(ESC);
+   write_byte('[');
+   print_string(s);
+}
+
 void print_int_padded(uint16_t i){
     uint16_t denom = 10000u; 
     while(denom!=0){

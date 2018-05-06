@@ -2,6 +2,9 @@
 
 #include "os.h"
 #include "printThreads.h"
+#include "serial.h"
+#include "synchro.h"
+
 
 #define BUF_TS 50
 #define PROD_TS 5
@@ -22,10 +25,29 @@ typedef struct buffer_t {
    uint16_t buf[BUF_SIZE];
 } buffer_t;
 
+
+
+struct mutex_t * screem;		/* screen mutex */
+
+
 void display_bounded_buffer(buffer_t *buf){
-   //serial_init();
+   serial_init();
+   int i=0;
    while(1){
-      yield();
+      mutex_lock(screem);
+      set_color(RED);
+      set_cursor(4,74);
+      print_string("________");
+      for(i=0; i < BUF_SIZE; i++) {
+	 set_cursor(5+i,74);
+	 print_string("|");
+	 print_int(buf->buf[i]);
+	 print_string("\t|");
+      }
+      set_cursor(5+BUF_SIZE,74);
+      print_string("|______|");
+      
+      mutex_unlock(screem);
    }
 }
 void producer(buffer_t *buf){
@@ -92,10 +114,12 @@ void blink(buffer_t *buf){
    }
 }
 
+
 int main(int argc, char **argv){
    system_t * sys;
    buffer_t * buf;
-
+   screem = malloc(100);//sizeof(mutex_t)); /* HELP: TODO: */
+   mutex_init(screem);
    sys = os_init();
    buf->prod_delay=BASE_DELAY;
    buf->cons_delay=BASE_DELAY;
@@ -103,10 +127,10 @@ int main(int argc, char **argv){
    buf->size=0;
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
-   //create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
-   //create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
+   create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
+   create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
    create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
-
+   create_thread("disp buf", (uint16_t) &display_bounded_buffer, buf, PRINT_THREAD_SIZE);
    os_start();
    sei();      //just to be sure
    while(1){

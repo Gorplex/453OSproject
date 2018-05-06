@@ -1,7 +1,8 @@
 /* Written: Luke Thompson and John Thomsen */
 #include "printThreads.h"
-
+struct mutex_t * screem;		/* screen mutex */
 void printThread(thread_t thread) {
+
    set_color(RED);
    print_string("\r\n\tThread Name:\t"); set_color(BR_RED);     print_string(thread.name);
    set_color(GREEN);
@@ -43,6 +44,7 @@ void printThread(thread_t thread) {
 } 
 
 void printSys(system_t * sys) {
+   mutex_lock(screem);
    set_cursor(1,1);
    set_color(CYAN);
    print_string("Program 3\r\n");
@@ -56,6 +58,7 @@ void printSys(system_t * sys) {
       print_string("\r\nThread ID: ");    print_int(i);
       printThread( sys->threads[i] );
    }
+   mutex_unlock(screem);
 }
 
 void printThreadsMain(uint16_t * sys){

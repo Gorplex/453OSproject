@@ -3,6 +3,7 @@
 #define PRINT_THREAD_H
 #include "os.h"
 #include "serial.h"
+#include "synchro.h"
 
 #define PRINT_THREAD_SIZE 1000
 void printThread(thread_t thread);
