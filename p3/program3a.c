@@ -70,15 +70,27 @@ void display_bounded_buffer(buffer_t *buf){
       set_color(BR_GREEN);
       print_string(">");
       
-      set_color(BR_YELLOW);
+      set_color(BR_MAGENTA);
       set_cursor(7+BUF_SIZE,74);
       print_string("     ");
       set_cursor(7+BUF_SIZE,63);
-      print_string("Not Full:  ");
-      print_int(buf->notFull->keys);
+      print_string("Locked: ");
+      print_int(buf->editing->locked);
       set_cursor(8+BUF_SIZE,74);
       print_string("     ");
       set_cursor(8+BUF_SIZE,63);
+      print_string("Owner:  ");
+      print_int(buf->editing->owner);
+
+      set_color(BR_YELLOW);
+      set_cursor(9+BUF_SIZE,74);
+      print_string("     ");
+      set_cursor(9+BUF_SIZE,63);
+      print_string("Not Full:  ");
+      print_int(buf->notFull->keys);
+      set_cursor(10+BUF_SIZE,74);
+      print_string("     ");
+      set_cursor(10+BUF_SIZE,63);
       print_string("Not Empty: ");
       print_int(buf->notEmpty->keys);
 
@@ -199,7 +211,7 @@ int main(int argc, char **argv){
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    create_thread("display bufffer", (uint16_t) &display_bounded_buffer, buf, PRINT_THREAD_SIZE);
    create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
-   create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
+   //create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
    create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
    
    os_start();
