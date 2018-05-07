@@ -210,7 +210,7 @@ int main(int argc, char **argv){
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    create_thread("display bufffer", (uint16_t) &display_bounded_buffer, buf, PRINT_THREAD_SIZE);
-   create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
+   //create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
    //create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
    create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
    

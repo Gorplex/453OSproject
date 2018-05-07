@@ -99,6 +99,8 @@ typedef struct system_t {
    TID_T threadCount;
    uint32_t time;
    uint32_t mtime;
+   uint8_t cur_count;
+   uint8_t sched_count;
 } system_t;
 
 system_t * os_init(void);

@@ -23,6 +23,8 @@ system_t * os_init(){
    sys->threads[0].cur_count=0;
    sys->threads[0].sched_count=0;
    sys->threads[0].wakeup_time=0;
+   sys->cur_count=0;
+   sys->sched_count=0;
    return sys;
 }
 
@@ -65,6 +67,7 @@ void os_start(){
    sys->threads[last].thread_status = THREAD_READY;
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sys->threads[sys->curThread].cur_count++;
+   sys->cur_count++;
    sei();
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
@@ -204,6 +207,7 @@ ISR(TIMER0_COMPA_vect) {
    sys->threads[last].thread_status = THREAD_READY;
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sys->threads[sys->curThread].cur_count++;
+   sys->cur_count++;
    sei();//CHECK
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
@@ -211,6 +215,8 @@ ISR(TIMER0_COMPA_vect) {
 //next two functions for p3
 void update_sched_count(){
    int i;
+   sys->sched_count = sys->cur_count;   
+   sys->cur_count = 0;   
    for(i=0;i<sys->threadCount;i++){
       sys->threads[i].sched_count = sys->threads[i].cur_count; 
       sys->threads[i].cur_count = 0; 
@@ -274,6 +280,7 @@ void yield(){
    }
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sys->threads[sys->curThread].cur_count++;
+   sys->cur_count++;
    sei();//CHECK
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 

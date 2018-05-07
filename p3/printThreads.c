@@ -38,24 +38,25 @@ void printThread(thread_t thread) {
       break;
    }
    set_color(GREEN);
-   print_string("\r\n\tWakeup Time:\t");   set_color(BR_GREEN);   print_int(thread.wakeup_time);
+   print_string("\r\n\tWakeup Time:\t");   set_color(BR_GREEN);   print_int_spaces(thread.wakeup_time);
    set_color(YELLOW);
-   print_string("\r\n\tSchedule Count: ");   set_color(BR_YELLOW);   print_int(thread.sched_count);
+   print_string("\r\n\tSchedule Count: ");   set_color(BR_YELLOW);   print_int_spaces(thread.sched_count);
    print_string("\r\n");
 } 
 
 void printSys(system_t * sys) {
+   TID_T i;
    mutex_lock(screem);
    set_cursor(1,1);
    set_color(CYAN);
    print_string("Program 3\r\n");
-   print_string("System Time: ");               print_int(sys->time);
-   print_string("s \t(");                        print_int(sys->mtime);
+   print_string("System Time: ");               print_int32(sys->time);
+   print_string("s \t(");                        print_int32(sys->mtime);
    print_string("ms)");
    print_string("\r\nNumber of Threads: ");     print_int(sys->threadCount);
+   print_string("\r\nSwaps Per Second: ");     print_int_spaces(sys->sched_count);
 
    print_string("\r\n\r\n");
-   int i;
    for(i=0; i < sys->threadCount; i++) {
       set_color(CYAN);
       print_string("\r\nThread ID: ");    print_int(i);
