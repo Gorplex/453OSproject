@@ -25,6 +25,7 @@ typedef struct buffer_t {
    uint16_t buf[BUF_SIZE];
    semaphore_t * notEmpty;
    semaphore_t * notFull;
+   mutex_t * editing;
 } buffer_t;
 
 //defined in print threads
@@ -42,6 +43,10 @@ void display_bounded_buffer(buffer_t *buf){
       print_string(" Cons: ");
       print_int(buf->cons_delay);
       
+      set_cursor(3,67);
+      print_string("   ");
+      set_cursor(3,75);
+      print_string("   ");
       set_color(GREEN);
       set_cursor(3,62);
       print_string("START: "); 
@@ -73,11 +78,15 @@ void display_bounded_buffer(buffer_t *buf){
       print_string(">");
       
       set_color(BR_YELLOW);
-      set_cursor(7+BUF_SIZE,65);
-      print_string("notFull: ");
+      set_cursor(7+BUF_SIZE,74);
+      print_string("     ");
+      set_cursor(7+BUF_SIZE,63);
+      print_string("Not Full:  ");
       print_int(buf->notFull->keys);
-      set_cursor(8+BUF_SIZE,65);
-      print_string("notEmpty: ");
+      set_cursor(8+BUF_SIZE,74);
+      print_string("     ");
+      set_cursor(8+BUF_SIZE,63);
+      print_string("Not Empty: ");
       print_int(buf->notEmpty->keys);
 
       mutex_unlock(screem);
@@ -88,19 +97,22 @@ void producer(buffer_t *buf){
    while(1){
       //wait for consumer
       sem_wait(buf->notFull);
+      
+      mutex_lock(buf->editing);
       //make a number at [start+size]
       buf->buf[(buf->start+buf->size)%BUF_SIZE] = rand()%RAND_RANGE;
       buf->size++;
+      mutex_unlock(buf->editing);
       
-      /*mutex_lock(screem);
-      set_cursor(4+buf->start,60);
-      print_string("     ");
-      set_cursor(5+buf->start,60);
+      mutex_lock(screem);
+      set_color(GREEN);
+      set_cursor(5+(buf->start+buf->size-2)%BUF_SIZE,62);
+      print_string("         ");
+      set_cursor(5+(buf->start+buf->size-1)%BUF_SIZE,62);
       print_string("ADDED ");
-      print_int_padded(buf->buf[buf->start+buf->size]);
-      print_string(" ---");
+      print_int(buf->buf[(buf->start+buf->size-1)%BUF_SIZE]);
       mutex_unlock(screem);
-      */
+      
       sem_signal(buf->notEmpty);   
       thread_sleep(buf->prod_delay/MS_PER_TICK);
    }
@@ -110,14 +122,27 @@ void consumer(buffer_t *buf){
    serial_init();
    while(1){
       //wait for producer
-      /*sem_wait(buf->notEmpty);
+      sem_wait(buf->notEmpty);
+      
+      mutex_lock(buf->editing);
       //remove a number at [start]
       buf->start=(buf->start+1)%BUF_SIZE;
       buf->size--;
+      mutex_unlock(buf->editing);
       
+      mutex_lock(screem);
+      set_color(BR_YELLOW);
+      set_cursor(5+(buf->start+BUF_SIZE-2)%BUF_SIZE,62);
+      print_string("         ");
+      set_cursor(5+(buf->start+BUF_SIZE-1)%BUF_SIZE,62);
+      print_string("ADDED ");
+      print_int(buf->buf[(buf->start+BUF_SIZE-1)%BUF_SIZE]);
+      mutex_unlock(screem);
+      
+
       sem_signal(buf->notFull); 
       thread_sleep(buf->cons_delay/MS_PER_TICK);
-   */}
+   }
 }
 
 //BLINK LED CODE
@@ -175,6 +200,8 @@ int main(int argc, char **argv){
    sem_init(buf->notEmpty, 0);
    buf->notFull=malloc(sizeof(semaphore_t));
    sem_init(buf->notFull, BUF_SIZE);
+   buf->editing=malloc(sizeof(mutex_t));
+   mutex_init(buf->editing);
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    create_thread("display bufffer", (uint16_t) &display_bounded_buffer, buf, PRINT_THREAD_SIZE);
