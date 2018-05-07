@@ -1,6 +1,6 @@
 /* Written: Luke Thompson and John Thomsen */
-#ifndef PRINT_THREAD_H
-#define PRINT_THREAD_H
+#ifndef SYNCHRO_H
+#define SYNCHRO_H
 
 #include "os.h"
 

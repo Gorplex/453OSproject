@@ -23,12 +23,11 @@ typedef struct buffer_t {
    uint16_t start;
    uint16_t size;
    uint16_t buf[BUF_SIZE];
+   semaphore_t * notEmpty;
 } buffer_t;
 
-
-
-extern struct mutex_t * screem;		/* screen mutex */
-
+//defined in print threads
+extern mutex_t * screem;		/* screen mutex */
 
 void display_bounded_buffer(buffer_t *buf){
    serial_init();
@@ -66,15 +65,18 @@ void producer(buffer_t *buf){
 
 void consumer(buffer_t *buf){
    while(1){
-      if(buf->size){
-         //remove a number at [start]
-         buf->start=(buf->start+1)%BUF_SIZE;
-         buf->size--;
-         thread_sleep(buf->cons_delay/MS_PER_TICK);
-      }else{
-         //wait for producer
-         yield();
-      }
+      //if(buf->size){ //REMOVED
+      
+      //wait for producer
+      sem_wait(buf->notEmpty);
+      //remove a number at [start]
+      buf->start=(buf->start+1)%BUF_SIZE;
+      buf->size--;
+      thread_sleep(buf->cons_delay/MS_PER_TICK);
+      
+      //}else{ //REMOVED
+         //yield();
+      //}
    }
 }
 
@@ -114,17 +116,21 @@ void blink(buffer_t *buf){
    }
 }
 
-
 int main(int argc, char **argv){
    system_t * sys;
    buffer_t * buf;
-   screem = malloc(100);//sizeof(mutex_t)); /* HELP: TODO: */
-   mutex_init(screem);
+   
    sys = os_init();
+   
+   screem = malloc(sizeof(mutex_t)); 
+   mutex_init(screem);
+   
    buf->prod_delay=BASE_DELAY;
    buf->cons_delay=BASE_DELAY;
    buf->start=0;
    buf->size=0;
+   buf->notEmpty=malloc(sizeof(semaphore_t));
+   sem_init(buf->notEmpty, 0);
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
