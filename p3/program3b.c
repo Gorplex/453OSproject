@@ -6,29 +6,35 @@
 
 #define ARRAY_SIZE 128
 #define MAX_VAL 255
+#define NUM_THREADS 4   //number of sorting threads
 
 #define SORT_TS 100
 #define DISP_TS 128
 
-typedef struct sortData {
+typedef struct signals {
+   mutex_t *creatingThreds;
+   uint8_t numCreated;
 
-} sortData;
 
-void init_toSort(uint8_t *toSort){
+} signals;
+
+void init_toSort(uint8_t *array){
    uint16_t i;
    for(i=0;i<ARRAY_SIZE;i++){
-      toSort[i] = rand()%MAX_VAL;
+      array[i] = rand()%MAX_VAL;
    }
 }
 
-void mt_sort()
+void mt_sort(uint8_t *array){
+
+}
 
 int main(int argc, char **argv){
    system_t * sys;
-   uint8_t *toSort;
+   uint8_t *array;
    
    toSort = malloc(ARRAY_SIZE);
-   init_toSort(toSort);
+   init_toSort(array);
 
    sys = os_init();
 
