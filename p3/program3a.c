@@ -11,7 +11,8 @@
 #define BLINK_TS 0
 
 #define BUF_SIZE 50        //circular queue
-#define BASE_DELAY 1000    //ms initial delay for producer and consumer
+#define PROD_DELAY 1000    //ms initial delay for producer
+#define CONS_DELAY 2000    //ms initial delay for consumer
 #define DELAY_INREMENT 50  //ms each keypress
 
 #define RAND_RANGE 1000    //posible numbers between 0 and RAND_RANGE-1
@@ -34,6 +35,10 @@ void display_bounded_buffer(buffer_t *buf){
    int i=0;
    while(1){
       mutex_lock(screem);
+      set_color(GREEN);
+      set_cursor(3,72);
+      print_string("SIZE: "); 
+      print_int(buf->size);
       set_color(RED);
       set_cursor(4,74);
       print_string("________");
@@ -50,28 +55,39 @@ void display_bounded_buffer(buffer_t *buf){
    }
 }
 void producer(buffer_t *buf){
+   serial_init();
    while(1){
       //wait for consumer
-      //sem_wait(buf->notFull);
-      if(buf->size < BUF_SIZE){
+      sem_wait(buf->notFull);
       //make a number at [start+size]
       buf->buf[buf->start+buf->size] = rand()%RAND_RANGE;
       buf->size++;
+      
+      /*mutex_lock(screem);
+      set_cursor(4+buf->start,60);
+      print_string("     ");
+      set_cursor(5+buf->start,60);
+      print_string("ADDED ");
+      print_int_padded(buf->buf[buf->start+buf->size]);
+      print_string(" ---");
+      mutex_unlock(screem);
+      */
+      sem_signal(buf->notEmpty);   
       thread_sleep(buf->prod_delay/MS_PER_TICK);
-      //sem_signal(buf->notEmpty);   
-      }
    }
 }
 
 void consumer(buffer_t *buf){
+   serial_init();
    while(1){
       //wait for producer
-      //sem_wait(buf->notEmpty);
+      sem_wait(buf->notEmpty);
       //remove a number at [start]
-      //buf->start=(buf->start+1)%BUF_SIZE;
-      //buf->size--;
-      //thread_sleep(buf->cons_delay/MS_PER_TICK);
-      //sem_signal(buf->notFull); 
+      buf->start=(buf->start+1)%BUF_SIZE;
+      buf->size--;
+      
+      sem_signal(buf->notFull); 
+      thread_sleep(buf->cons_delay/MS_PER_TICK);
    }
 }
 
@@ -120,8 +136,10 @@ int main(int argc, char **argv){
    screem = malloc(sizeof(mutex_t)); 
    mutex_init(screem);
    
-   buf->prod_delay=BASE_DELAY;
-   buf->cons_delay=BASE_DELAY;
+   //buffer starts empty
+   buf=calloc(1,sizeof(buffer_t));
+   buf->prod_delay=PROD_DELAY;
+   buf->cons_delay=CONS_DELAY;
    buf->start=0;
    buf->size=0;
    buf->notEmpty=malloc(sizeof(semaphore_t));
@@ -130,10 +148,11 @@ int main(int argc, char **argv){
    sem_init(buf->notFull, BUF_SIZE);
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
+   create_thread("display bufffer", (uint16_t) &display_bounded_buffer, buf, PRINT_THREAD_SIZE);
    create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
    create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
    create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
-   create_thread("disp buf", (uint16_t) &display_bounded_buffer, buf, PRINT_THREAD_SIZE);
+   
    os_start();
    sei();      //just to be sure
    while(1){

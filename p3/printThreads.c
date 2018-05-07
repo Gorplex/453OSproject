@@ -19,21 +19,22 @@ void printThread(thread_t thread) {
    print_string("\r\n\tStack End:\t");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
    set_color(RED);
    print_string("\r\n\tThread Status:\t");   set_color(BR_RED);   
+   //extra spacing to overwrite longer words
    switch(thread.thread_status){
       case THREAD_RUNNING:
-      print_string("THREAD RUNNING"); 
+      print_string("THREAD RUNNING "); 
       break;
       case THREAD_READY:
-      print_string("THREAD READY"); 
+      print_string("THREAD READY   "); 
       break;
       case THREAD_SLEEPING:
       print_string("THREAD SLEEPING"); 
       break;
       case THREAD_WAITING:
-      print_string("THREAD WAITING"); 
+      print_string("THREAD WAITING "); 
       break;
       default:
-      print_string("UNRECOGNIZED"); 
+      print_string("UNRECOGNIZED   "); 
       break;
    }
    set_color(GREEN);

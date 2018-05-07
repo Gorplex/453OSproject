@@ -87,10 +87,10 @@ typedef struct thread_t {
    uint16_t stackPtr;
    uint16_t stackBase;
    uint16_t stackEnd;
-   uint16_t thread_status;
+   uint8_t thread_status;
    uint8_t cur_count;
-   uint16_t sched_count;
-   uint16_t wakeup_time;
+   uint8_t sched_count;
+   uint32_t wakeup_time;
 } thread_t;
 
 typedef struct system_t {
