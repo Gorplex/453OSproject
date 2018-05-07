@@ -5,7 +5,6 @@
 #include "serial.h"
 #include "synchro.h"
 
-
 #define BUF_TS 50
 #define PROD_TS 5
 #define CONS_TS 5
@@ -24,6 +23,7 @@ typedef struct buffer_t {
    uint16_t size;
    uint16_t buf[BUF_SIZE];
    semaphore_t * notEmpty;
+   semaphore_t * notFull;
 } buffer_t;
 
 //defined in print threads
@@ -51,32 +51,27 @@ void display_bounded_buffer(buffer_t *buf){
 }
 void producer(buffer_t *buf){
    while(1){
+      //wait for consumer
+      //sem_wait(buf->notFull);
       if(buf->size < BUF_SIZE){
-         //make a number at [start+size]
-         buf->buf[buf->start+buf->size] = rand()%RAND_RANGE;
-         buf->size++;
-         thread_sleep(buf->prod_delay/MS_PER_TICK);
-      }else{
-         //wait for consumer
-         yield();
+      //make a number at [start+size]
+      buf->buf[buf->start+buf->size] = rand()%RAND_RANGE;
+      buf->size++;
+      thread_sleep(buf->prod_delay/MS_PER_TICK);
+      //sem_signal(buf->notEmpty);   
       }
    }
 }
 
 void consumer(buffer_t *buf){
    while(1){
-      //if(buf->size){ //REMOVED
-      
       //wait for producer
-      sem_wait(buf->notEmpty);
+      //sem_wait(buf->notEmpty);
       //remove a number at [start]
-      buf->start=(buf->start+1)%BUF_SIZE;
-      buf->size--;
-      thread_sleep(buf->cons_delay/MS_PER_TICK);
-      
-      //}else{ //REMOVED
-         //yield();
-      //}
+      //buf->start=(buf->start+1)%BUF_SIZE;
+      //buf->size--;
+      //thread_sleep(buf->cons_delay/MS_PER_TICK);
+      //sem_signal(buf->notFull); 
    }
 }
 
@@ -131,6 +126,8 @@ int main(int argc, char **argv){
    buf->size=0;
    buf->notEmpty=malloc(sizeof(semaphore_t));
    sem_init(buf->notEmpty, 0);
+   buf->notFull=malloc(sizeof(semaphore_t));
+   sem_init(buf->notFull, BUF_SIZE);
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
