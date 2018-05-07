@@ -10,7 +10,7 @@
 #define CONS_TS 5
 #define BLINK_TS 0
 
-#define BUF_SIZE 50        //circular queue
+#define BUF_SIZE 10        //circular queue
 #define PROD_DELAY 1000    //ms initial delay for producer
 #define CONS_DELAY 2000    //ms initial delay for consumer
 #define DELAY_INREMENT 50  //ms each keypress
@@ -39,18 +39,29 @@ void display_bounded_buffer(buffer_t *buf){
       set_cursor(3,72);
       print_string("SIZE: "); 
       print_int(buf->size);
-      set_color(RED);
+      set_color(BR_MAGENTA);
       set_cursor(4,74);
       print_string("________");
       for(i=0; i < BUF_SIZE; i++) {
-	 set_cursor(5+i,74);
-	 print_string("|");
-	 print_int(buf->buf[i]);
-	 print_string("\t|");
+	      set_cursor(5+i,74);
+	      print_string("|");
+	      print_int(buf->buf[i]);
+	      print_string("\t|");
       }
       set_cursor(5+BUF_SIZE,74);
       print_string("|______|");
       
+      set_cursor(4+buf->start,72);
+      print_string(" ");
+      set_cursor(5+(buf->start+buf->size-1)%BUF_SIZE,73);
+      print_string(" ");
+      set_cursor(5+buf->start,72);
+      set_color(BR_YELLOW);
+      print_string("<");
+      set_cursor(5+(buf->start+buf->size)%BUF_SIZE,73);
+      set_color(BR_GREEN);
+      print_string(">");
+
       mutex_unlock(screem);
    }
 }
@@ -60,7 +71,7 @@ void producer(buffer_t *buf){
       //wait for consumer
       sem_wait(buf->notFull);
       //make a number at [start+size]
-      buf->buf[buf->start+buf->size] = rand()%RAND_RANGE;
+      buf->buf[(buf->start+buf->size)%BUF_SIZE] = rand()%RAND_RANGE;
       buf->size++;
       
       /*mutex_lock(screem);

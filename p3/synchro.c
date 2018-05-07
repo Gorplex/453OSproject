@@ -14,7 +14,7 @@ void mutex_lock(struct mutex_t* m){
    cli();
    tid=get_thread_id();
    if(m->locked){
-      m->queue.q[m->queue.start+m->queue.size] = tid;
+      m->queue.q[(m->queue.start+m->queue.size)%MAX_THREADS] = tid;
       m->queue.size++;
       sys->threads[tid].thread_status=THREAD_WAITING;
       yield();
@@ -53,7 +53,7 @@ void sem_wait(struct semaphore_t* s){
    if(s->keys <= 0){
       s->keys--;
       tid = get_thread_id();
-      s->queue.q[s->queue.size+s->queue.start] = tid;
+      s->queue.q[(s->queue.size+s->queue.start)%MAX_THREADS] = tid;
       s->queue.size++;
       sys->threads[tid].thread_status = THREAD_WAITING;
       yield();
