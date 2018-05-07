@@ -49,11 +49,14 @@ uint8_t write_byte(uint8_t b) {
    return 1;
 }
 
-void print_string(char* s){
+uint16_t print_string(char* s){
+    uint16_t i=0;
     while(*s){
         write_byte((uint8_t)*s);
         s++;
+        i++;
     }
+    return i;
 }
 
 void print_cmd(char* s) {
@@ -82,7 +85,20 @@ void print_int(uint16_t i){
       denom = denom/10;
     }
 }
-
+void print_int_spaces(uint16_t i){
+   uint16_t denom = 10000u;
+   uint8_t flag = 0;
+   while(denom!=0){
+      if(flag || i/denom!=0 || denom==1){
+         flag=1;
+         write_byte((uint8_t)(i/denom + OFFSET_DIG));
+      }else{
+         write_byte((uint8_t)' ');
+      }
+      i = i%denom;
+      denom = denom/10;
+    }
+}
 void print_int32_padded(uint32_t i){
     uint32_t denom = 1000000000u; 
     while(denom!=0){
@@ -104,7 +120,20 @@ void print_int32(uint32_t i){
       denom = denom/10;
    }
 }
-
+void print_int32_spaces(uint32_t i){
+   uint32_t denom = 1000000000u; 
+   uint8_t flag = 0;
+   while(denom != 0){
+      if(flag || i/denom != 0 || denom==1){
+         flag=1;
+         write_byte((uint8_t)(i/denom + OFFSET_DIG));
+      }else{
+         write_byte((uint8_t)' ');
+      }
+      i = i%denom;
+      denom = denom/10;
+   }
+}
 void print_hex_raw(uint16_t i){
     uint16_t temp;
     uint8_t j=4;
@@ -187,3 +216,18 @@ void set_cursor_home(){
     write_byte('[');
     write_byte('H');
 }
+uint16_t print_labeled_int(uint8_t row, uint8_t col, char *label, uint16_t i){
+   uint16_t len;
+   set_cursor(row, col);
+   len = print_string(label);
+   print_int_spaces(i);
+   return len+5;
+}
+uint16_t print_labeled_int32(uint8_t row, uint8_t col, char *label, uint16_t i){
+   uint16_t len;
+   set_cursor(row, col);
+   len = print_string(label);
+   print_int32_spaces(i);
+   return len+10;
+}
+

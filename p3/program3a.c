@@ -11,8 +11,8 @@
 #define BLINK_TS 0
 
 #define BUF_SIZE 10        //circular queue
-#define PROD_DELAY 1000    //ms initial delay for producer
-#define CONS_DELAY 2000    //ms initial delay for consumer
+#define PROD_DELAY 2000    //ms initial delay for producer
+#define CONS_DELAY 1000    //ms initial delay for consumer
 #define DELAY_INREMENT 50  //ms each keypress
 
 #define RAND_RANGE 1000    //posible numbers between 0 and RAND_RANGE-1
@@ -33,7 +33,7 @@ extern mutex_t * screem;		/* screen mutex */
 
 void display_bounded_buffer(buffer_t *buf){
    serial_init();
-   int i=0;
+   uint16_t i;
    while(1){
       mutex_lock(screem);
       set_color(BR_BLUE);
@@ -43,17 +43,10 @@ void display_bounded_buffer(buffer_t *buf){
       print_string(" Cons: ");
       print_int(buf->cons_delay);
       
-      set_cursor(3,67);
-      print_string("   ");
-      set_cursor(3,75);
-      print_string("   ");
       set_color(GREEN);
-      set_cursor(3,62);
-      print_string("START: "); 
-      print_int(buf->start);
-      print_string(" SIZE: "); 
-      print_int(buf->size);
-      
+      i = print_labeled_int(3,58,"START:", buf->start);
+      print_labeled_int(3,59+i,"SIZE:", buf->size);
+
       set_color(BR_MAGENTA);
       set_cursor(4,74);
       print_string("_______");
@@ -132,10 +125,10 @@ void consumer(buffer_t *buf){
       
       mutex_lock(screem);
       set_color(BR_YELLOW);
-      set_cursor(5+(buf->start+BUF_SIZE-2)%BUF_SIZE,62);
-      print_string("         ");
-      set_cursor(5+(buf->start+BUF_SIZE-1)%BUF_SIZE,62);
-      print_string("ADDED ");
+      set_cursor(5+(buf->start+BUF_SIZE-2)%BUF_SIZE,60);
+      print_string("           ");
+      set_cursor(5+(buf->start+BUF_SIZE-1)%BUF_SIZE,60);
+      print_string("REMOVED ");
       print_int(buf->buf[(buf->start+BUF_SIZE-1)%BUF_SIZE]);
       mutex_unlock(screem);
       
