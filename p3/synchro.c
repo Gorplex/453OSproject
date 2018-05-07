@@ -40,8 +40,6 @@ void mutex_unlock(struct mutex_t* m){
    }
    sei();
 }
-
-
 void sem_init(struct semaphore_t* s, int8_t value){
    s->keys = value;
    s->queue.start = 0;

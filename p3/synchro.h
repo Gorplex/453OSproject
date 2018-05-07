@@ -21,7 +21,7 @@ void mutex_lock(struct mutex_t* m);
 void mutex_unlock(struct mutex_t* m);
 
 typedef struct semaphore_t {
-   uint8_t keys;
+   int8_t keys;
    queue_t queue;
 } semaphore_t;
 

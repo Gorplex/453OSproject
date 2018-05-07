@@ -35,13 +35,23 @@ void display_bounded_buffer(buffer_t *buf){
    int i=0;
    while(1){
       mutex_lock(screem);
+      set_color(BR_BLUE);
+      set_cursor(2,59);
+      print_string("Prod: ");
+      print_int(buf->prod_delay);
+      print_string(" Cons: ");
+      print_int(buf->cons_delay);
+      
       set_color(GREEN);
-      set_cursor(3,72);
-      print_string("SIZE: "); 
+      set_cursor(3,62);
+      print_string("START: "); 
+      print_int(buf->start);
+      print_string(" SIZE: "); 
       print_int(buf->size);
+      
       set_color(BR_MAGENTA);
       set_cursor(4,74);
-      print_string("________");
+      print_string("_______");
       for(i=0; i < BUF_SIZE; i++) {
 	      set_cursor(5+i,74);
 	      print_string("|");
@@ -49,9 +59,9 @@ void display_bounded_buffer(buffer_t *buf){
 	      print_string("\t|");
       }
       set_cursor(5+BUF_SIZE,74);
-      print_string("|______|");
+      print_string("|_____|");
       
-      set_cursor(4+buf->start,72);
+      set_cursor(5+(buf->start+BUF_SIZE-1)%BUF_SIZE,72);
       print_string(" ");
       set_cursor(5+(buf->start+buf->size-1)%BUF_SIZE,73);
       print_string(" ");
@@ -61,6 +71,14 @@ void display_bounded_buffer(buffer_t *buf){
       set_cursor(5+(buf->start+buf->size)%BUF_SIZE,73);
       set_color(BR_GREEN);
       print_string(">");
+      
+      set_color(BR_YELLOW);
+      set_cursor(7+BUF_SIZE,65);
+      print_string("notFull: ");
+      print_int(buf->notFull->keys);
+      set_cursor(8+BUF_SIZE,65);
+      print_string("notEmpty: ");
+      print_int(buf->notEmpty->keys);
 
       mutex_unlock(screem);
    }
@@ -92,14 +110,14 @@ void consumer(buffer_t *buf){
    serial_init();
    while(1){
       //wait for producer
-      sem_wait(buf->notEmpty);
+      /*sem_wait(buf->notEmpty);
       //remove a number at [start]
       buf->start=(buf->start+1)%BUF_SIZE;
       buf->size--;
       
       sem_signal(buf->notFull); 
       thread_sleep(buf->cons_delay/MS_PER_TICK);
-   }
+   */}
 }
 
 //BLINK LED CODE
