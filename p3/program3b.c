@@ -12,6 +12,10 @@
 #define SORT_TS 200
 #define DISP_TS 200
 
+#define SHORT_DELAY 100
+#define MED_DELAY 200
+#define LONG_DELAY 500
+
 uint8_t * copy;         //storage array
 extern struct mutex_t * screem;
 
@@ -73,20 +77,20 @@ void mt_sort(uint8_t *array){
    uint16_t start;
    uint16_t end;
    uint16_t i;
-
+   
+   thread_sleep(LONG_DELAY);
    mutex_lock(signals->initThreads);
    myID = signals->numCreated;
    while(signals->numCreated <= NUM_THREADS){
       create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
-   }
-   if(myID==1){
-      copy = malloc(ARRAY_SIZE);
+      thread_sleep(MED_DELAY);
    }
    while(1){
       if(myID==1){
          for(i=0;i<ARRAY_SIZE;i++){
             copy[i]=array[i];
          }
+         thread_sleep(1000);
       }
       mutex_unlock(signals->initThreads);
       //ALL START
@@ -117,9 +121,49 @@ void mt_sort(uint8_t *array){
    }
 }
 
-void displayMain(){
-   while(1){
+void printArrayCol(uint16_t row,uint16_t col, uint8_t * array, INDEX index){
+   INDEX i;
+   for(i=0;i<ARRAY_SIZE/4;i++){
+      set_cursor(row+i,col);
+      print_int(array[i+index]);
+   }
+}
 
+void displayMain(uint8_t *array){
+   while(1){
+      mutex_lock(screem);
+      set_color(BR_RED);
+      set_cursor(3,55);
+      print_string("sort");
+      set_cursor(3,70);
+      print_string("sort");
+      
+      set_color(RED);
+      set_cursor(3,60);
+      print_string("copy");
+      set_cursor(3,75);
+      print_string("copy");
+
+      set_color(BR_CYAN);
+      printArrayCol(4,55,array,0);
+      set_color(BR_MAGENTA);
+      printArrayCol(5+ARRAY_SIZE/4,55,array,ARRAY_SIZE/4);
+      set_color(BR_YELLOW);
+      printArrayCol(4,70,array,ARRAY_SIZE/2);
+      set_color(BR_GREEN);
+      printArrayCol(5+ARRAY_SIZE/4,70,array,ARRAY_SIZE*3/4);
+      
+      set_color(CYAN);
+      printArrayCol(4,60,copy,0);
+      set_color(MAGENTA);
+      printArrayCol(5+ARRAY_SIZE/4,60,copy,ARRAY_SIZE/4);
+      set_color(YELLOW);
+      printArrayCol(4,75,copy,ARRAY_SIZE/2);
+      set_color(GREEN);
+      printArrayCol(5+ARRAY_SIZE/4,75,copy,ARRAY_SIZE*3/4);
+      
+      mutex_unlock(screem);
+      yield();
    }
 }
 
@@ -127,11 +171,12 @@ int main(int argc, char **argv){
    system_t * sys;
    uint8_t *array;
    
-   //signals = malloc(sizeof(signals_t));
-   //init_signals(signals);
+   signals = malloc(sizeof(signals_t));
+   init_signals(signals);
    
-   //array = malloc(ARRAY_SIZE);
-   //init_array(array);
+   array = malloc(ARRAY_SIZE);
+   copy = malloc(ARRAY_SIZE);
+   init_array(array);
 
    screem = malloc(sizeof(mutex_t));
    mutex_init(screem);
@@ -141,7 +186,7 @@ int main(int argc, char **argv){
    sys = os_init_noMain();
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
-   //create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
+   create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("display", (uint16_t) &displayMain, array, DISP_TS);
    
    os_start();
