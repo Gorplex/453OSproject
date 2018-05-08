@@ -301,3 +301,9 @@ void thread_swap(TID_T next){
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
 
+void create_thread_live(char* name, uint16_t address, void* args, uint16_t stack_size){
+   cli();
+   create_thread(name, address, args, stack_size);
+   sei();
+}
+

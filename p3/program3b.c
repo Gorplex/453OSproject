@@ -82,7 +82,7 @@ void mt_sort(uint8_t *array){
    mutex_lock(signals->initThreads);
    myID = signals->numCreated;
    while(signals->numCreated <= NUM_THREADS){
-      create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
+      create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
       thread_sleep(MED_DELAY);
    }
    while(1){

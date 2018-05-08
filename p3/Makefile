@@ -16,7 +16,12 @@ default: p3a
 
 p3a: program3a program
 p3b: program3b program
-b: program3b program
+a: p3a
+b: p3b
+
+#FOR SENG SPEC
+program_3a: program3a
+program_3b: program3b
 
 %: %.c $(HEADERS) $(CFILES)
 	avr-gcc -g -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^
