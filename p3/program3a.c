@@ -1,32 +1,7 @@
 /* Written: Luke Thompson and John Thomsen */
+#include "program3a.h"
 
-#include "os.h"
-#include "printThreads.h"
-#include "serial.h"
-#include "synchro.h"
-
-#define BUF_TS 50
-#define PROD_TS 5
-#define CONS_TS 5
-#define BLINK_TS 0
-
-#define BUF_SIZE 10        //circular queue
-#define PROD_DELAY 2000    //ms initial delay for producer
-#define CONS_DELAY 1000    //ms initial delay for consumer
-#define DELAY_INREMENT 50  //ms each keypress
-
-#define RAND_RANGE 1000    //posible numbers between 0 and RAND_RANGE-1
-
-typedef struct buffer_t {
-   uint16_t prod_delay;
-   uint16_t cons_delay;
-   uint16_t start;
-   uint16_t size;
-   uint16_t buf[BUF_SIZE];
-   semaphore_t * notEmpty;
-   semaphore_t * notFull;
-   mutex_t * editing;
-} buffer_t;
+buffer_t * buf;
 
 //defined in print threads
 extern mutex_t * screem;		/* screen mutex */
@@ -64,7 +39,7 @@ void display_bounded_buffer(buffer_t *buf){
       set_cursor(5+(buf->start+buf->size-1)%BUF_SIZE,73);
       print_string(" ");
       set_cursor(5+buf->start,72);
-      set_color(BR_YELLOW);
+      set_color(BR_RED);
       print_string("<");
       set_cursor(5+(buf->start+buf->size)%BUF_SIZE,73);
       set_color(BR_GREEN);
@@ -82,12 +57,13 @@ void display_bounded_buffer(buffer_t *buf){
       print_string("Owner:  ");
       print_int(buf->editing->owner);
 
-      set_color(BR_YELLOW);
+      set_color(BR_GREEN);
       set_cursor(9+BUF_SIZE,74);
       print_string("     ");
       set_cursor(9+BUF_SIZE,63);
       print_string("Not Full:  ");
       print_int(buf->notFull->keys);
+      set_color(BR_RED);
       set_cursor(10+BUF_SIZE,74);
       print_string("     ");
       set_cursor(10+BUF_SIZE,63);
@@ -98,6 +74,7 @@ void display_bounded_buffer(buffer_t *buf){
    }
 }
 void producer(buffer_t *buf){
+   int i = 0;
    serial_init();
    while(1){
       //wait for consumer
@@ -110,7 +87,7 @@ void producer(buffer_t *buf){
       mutex_unlock(buf->editing);
       
       mutex_lock(screem);
-      set_color(GREEN);
+      set_color(BR_GREEN);
       set_cursor(5+(buf->start+buf->size-2)%BUF_SIZE,62);
       print_string("         ");
       set_cursor(5+(buf->start+buf->size-1)%BUF_SIZE,62);
@@ -136,7 +113,7 @@ void consumer(buffer_t *buf){
       mutex_unlock(buf->editing);
       
       mutex_lock(screem);
-      set_color(BR_YELLOW);
+      set_color(BR_RED);
       set_cursor(5+(buf->start+BUF_SIZE-2)%BUF_SIZE,60);
       print_string("           ");
       set_cursor(5+(buf->start+BUF_SIZE-1)%BUF_SIZE,60);
@@ -188,7 +165,6 @@ void blink(buffer_t *buf){
 
 int main(int argc, char **argv){
    system_t * sys;
-   buffer_t * buf;
    
    sys = os_init();
    
@@ -210,8 +186,8 @@ int main(int argc, char **argv){
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    create_thread("display bufffer", (uint16_t) &display_bounded_buffer, buf, PRINT_THREAD_SIZE);
-   //create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
-   //create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
+   create_thread("producer", (uint16_t) &producer, buf, PROD_TS);
+   create_thread("consumer", (uint16_t) &consumer, buf, CONS_TS);
    create_thread("blink", (uint16_t) &blink, buf, BLINK_TS);
    
    os_start();

@@ -1,10 +1,12 @@
 /* Written: Luke Thompson and John Thomsen */
 #include "printThreads.h"
+#include "program3a.h"
 struct mutex_t * screem;		/* screen mutex */
-void printThread(thread_t thread) {
+extern buffer_t * buf;			/* defined in program3a.c */
 
+void printThread(thread_t thread) {
    set_color(RED);
-   print_string("\r\n\tThread Name:\t"); set_color(BR_RED);     print_string(thread.name);
+   print_string("\tName:\t"); set_color(BR_RED);     print_string(thread.name);
    set_color(GREEN);
    print_string("\r\n\tThread PC:\t");   set_color(BR_GREEN);   print_hex(thread.pc);
    set_color(YELLOW);
@@ -16,7 +18,7 @@ void printThread(thread_t thread) {
    set_color(CYAN);
    print_string("\r\n\tStack Base:\t");  set_color(BR_CYAN);    print_hex(thread.stackBase);
    set_color(WHITE);
-   print_string("\r\n\tStack End:\t");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
+   print_string("\tStack End: ");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
    set_color(RED);
    print_string("\r\n\tThread Status:\t");   set_color(BR_RED);   
    //extra spacing to overwrite longer words
@@ -47,6 +49,10 @@ void printThread(thread_t thread) {
 void printSys(system_t * sys) {
    TID_T i;
    mutex_lock(screem);
+   if(sys->time == 2)		/* TODO: why is this needed? */
+      clear_screen();
+
+
    set_cursor(1,1);
    set_color(CYAN);
    print_string("Program 3\r\n");
@@ -65,12 +71,41 @@ void printSys(system_t * sys) {
    mutex_unlock(screem);
 }
 
+void getKeys() {
+   uint8_t c;
+   while(byte_available()) {
+      c=read_byte();
+      switch(c) {
+	 /* Producer */
+	 case 'r':
+	    buf->prod_delay += DELAY_INCREMENT;
+	    break;
+	 case 'f':
+	    buf->prod_delay -= DELAY_INCREMENT;
+	    break;
+	 case 'u':
+	    buf->cons_delay += DELAY_INCREMENT;
+	    break;
+	 case 'j':
+	    buf->cons_delay -= DELAY_INCREMENT;
+	    break;
+      }
+      /* prevent underflow */
+      if (buf->prod_delay < DELAY_INCREMENT)
+	 buf->prod_delay = DELAY_INCREMENT;
+      if (buf->cons_delay < DELAY_INCREMENT)
+	 buf->cons_delay = DELAY_INCREMENT;
+   }
+}
+
 void printThreadsMain(uint16_t * sys){
    
    serial_init();
    clear_screen();
    while(1) {
       printSys( (system_t *) sys);
+      getKeys();
    }
 }
+
  

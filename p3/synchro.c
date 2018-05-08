@@ -70,9 +70,8 @@ void sem_signal(struct semaphore_t* s){
       s->queue.start = (s->queue.start+1)%MAX_THREADS;
       s->queue.size--;
       sys->threads[tid].thread_status = THREAD_READY;
-   }else{
-      s->keys++; 
    }
+   s->keys++; 
    sei();
 }
 //always switch to thread from waitlist?
