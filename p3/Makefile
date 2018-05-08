@@ -16,6 +16,7 @@ default: p3a
 
 p3a: program3a program
 p3b: program3b program
+b: program3b program
 
 %: %.c $(HEADERS) $(CFILES)
 	avr-gcc -g -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^

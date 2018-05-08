@@ -9,6 +9,7 @@
 
 #define MAX_THREADS 8  //max threads
 #define TID_T uint8_t  //thread ID type (in case we need more than 15 threads
+#define NOT_THREAD 255
 
 #define REGSIZE 45  //41 used with empty function
 
@@ -117,7 +118,6 @@ void yield();
 uint16_t get_thread_id();
 system_t * os_init_noMain();
 void thread_swap(TID_T next);
-
 
 
 #endif

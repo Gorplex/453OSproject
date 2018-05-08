@@ -33,10 +33,11 @@ system_t * os_init_noMain(){
    start_system_timer();
    cli();
    sys = malloc(sizeof(system_t));
-   sys->curThread=-1;    // was -1,0 now 0,1
-   sys->threadCount=0;  //main is now a thread
+   sys->curThread=NOT_THREAD;
+   sys->threadCount=0;  
    sys->time=0;
    sys->mtime=0;
+   sys->cur_count=0;
    sys->sched_count=0;
    return sys;
 }

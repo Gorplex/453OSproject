@@ -9,8 +9,11 @@
 #define MAX_VAL 255
 #define NUM_THREADS 4   //number of sorting threads
 
-#define SORT_TS 100
-#define DISP_TS 128
+#define SORT_TS 200
+#define DISP_TS 200
+
+uint8_t * copy;         //storage array
+extern struct mutex_t * screem;
 
 typedef struct signals_t {
    mutex_t *initThreads;
@@ -19,11 +22,11 @@ typedef struct signals_t {
 } signals_t;
 
 signals_t * signals;
-uint8_t * copy;         //storage array
 
 void printThreadsMain(uint16_t *sys){
    serial_init();
    clear_screen();
+   
    while(1){
       printSys((system_t *) sys);
    }
@@ -121,19 +124,25 @@ int main(int argc, char **argv){
    system_t * sys;
    uint8_t *array;
    
-   signals = malloc(sizeof(signals_t));
-   init_signals(signals);
+   //signals = malloc(sizeof(signals_t));
+   //init_signals(signals);
+   
+   //array = malloc(ARRAY_SIZE);
+   //init_array(array);
 
-   array = malloc(ARRAY_SIZE);
-   init_array(array);
+   screem = malloc(sizeof(mutex_t));
+   mutex_init(screem);
 
-   sys = os_init_noMain();
+   sys = os_init();
 
-   create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
-   //create_thread("display", (uint16_t) &setLEDMain, &delay, SET_LED_SIZE);
+   //create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
+   //create_thread("display", (uint16_t) &display, array, DISP_TS);
    
    os_start();
    //should not return here
+   while(1){
+
+   }
 }
 
