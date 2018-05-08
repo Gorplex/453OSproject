@@ -115,6 +115,7 @@ void start_system_timer();
 void thread_sleep(uint16_t ticks);
 void yield();
 uint16_t get_thread_id();
+system_t * os_init_noMain();
 
 
 
