@@ -49,7 +49,7 @@ void printThread(thread_t thread) {
 void printSys(system_t * sys) {
    TID_T i;
    mutex_lock(screem);
-   if(sys->time == 2)		/* TODO: why is this needed? */
+   if(sys->time == 1)		/* TODO: why is this needed? */
       clear_screen();
 
 

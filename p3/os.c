@@ -76,7 +76,7 @@ void os_start(){
    uint16_t trash;
    //if cur thread is 0 main needs to be saved if -1 main context is discarded
    if(sys->curThread==0){
-      thread_swap(get_next_thread());
+      yield();
    }else{
       sys->curThread = get_next_thread();
       sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
@@ -196,7 +196,8 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
 //This interrupt routine is automatically run every 10 milliseconds
 ISR(TIMER0_COMPA_vect) {
    //END SENG
-
+   uint8_t last;
+   
    //START SENG
    //At the beginning of this ISR, the registers r0, r1, and r18-31 have 
    //already been pushed to the stack
@@ -216,7 +217,7 @@ ISR(TIMER0_COMPA_vect) {
    //END SENG
    
    sys->mtime += MS_PER_TICK;
-   thread_swap(get_next_thread());//CHECK SWAP
+   thread_swap(get_next_thread());
 }
 
 //next two functions for p3
@@ -272,7 +273,6 @@ void thread_sleep(uint16_t ticks){
       sys->threads[sys->curThread].wakeup_time = sys->mtime + ticks*MS_PER_TICK;
       sys->threads[sys->curThread].thread_status=THREAD_SLEEPING;
       yield();
-      //RETURN HERE CHECK CURRENT 
    }
 }
 
@@ -289,7 +289,9 @@ void thread_swap(TID_T next){
    cli();
    last = sys->curThread;
    sys->curThread = next;
-   sys->threads[last].thread_status = THREAD_READY;
+   if(sys->threads[last].thread_status == THREAD_RUNNING){
+      sys->threads[last].thread_status = THREAD_READY;
+   }
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sys->threads[sys->curThread].cur_count++;
    sys->cur_count++;
