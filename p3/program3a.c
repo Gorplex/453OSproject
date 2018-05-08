@@ -6,7 +6,7 @@ buffer_t * buf;
 //defined in print threads
 extern mutex_t * screem;		/* screen mutex */
 
-void getKeys() {
+void getKeys() { 
    uint8_t c;
    while(byte_available()) {
       c=read_byte();
@@ -34,8 +34,6 @@ void getKeys() {
 }
 
 void printThreadsMain(uint16_t * sys){
-   serial_init();
-   clear_screen();
    while(1) {
       printSys( (system_t *) sys);
       getKeys();
@@ -43,7 +41,7 @@ void printThreadsMain(uint16_t * sys){
 }
 
 void display_bounded_buffer(buffer_t *buf){
-   serial_init();
+   
    uint16_t i;
    while(1){
       mutex_lock(screem);
@@ -111,7 +109,6 @@ void display_bounded_buffer(buffer_t *buf){
 }
 void producer(buffer_t *buf){
    int i = 0;
-   serial_init();
    while(1){
       //wait for consumer
       sem_wait(buf->notFull);
@@ -137,7 +134,6 @@ void producer(buffer_t *buf){
 }
 
 void consumer(buffer_t *buf){
-   serial_init();
    while(1){
       //wait for producer
       sem_wait(buf->notEmpty);
@@ -203,6 +199,9 @@ int main(int argc, char **argv){
    system_t * sys;
    
    sys = os_init();
+   
+   serial_init();
+   clear_screen();
    
    screem = malloc(sizeof(mutex_t)); 
    mutex_init(screem);

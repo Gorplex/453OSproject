@@ -24,9 +24,6 @@ typedef struct signals_t {
 signals_t * signals;
 
 void printThreadsMain(uint16_t *sys){
-   serial_init();
-   clear_screen();
-   
    while(1){
       printSys((system_t *) sys);
    }
@@ -141,17 +138,13 @@ int main(int argc, char **argv){
 
    serial_init();
    clear_screen();
-   sys = os_init();
+   sys = os_init_noMain();
 
-   //create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
+   create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    //create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
-   //create_thread("display", (uint16_t) &displayMain, array, DISP_TS);
+   create_thread("display", (uint16_t) &displayMain, array, DISP_TS);
    
    os_start();
    //should not return here
-   while(1){
-      printSys(sys);
-      yield();
-   }
 }
 
