@@ -6,6 +6,42 @@ buffer_t * buf;
 //defined in print threads
 extern mutex_t * screem;		/* screen mutex */
 
+void getKeys() {
+   uint8_t c;
+   while(byte_available()) {
+      c=read_byte();
+      switch(c) {
+	 /* Producer */
+	 case 'r':
+	    buf->prod_delay += DELAY_INCREMENT;
+	    break;
+	 case 'f':
+	    buf->prod_delay -= DELAY_INCREMENT;
+	    break;
+	 case 'u':
+	    buf->cons_delay += DELAY_INCREMENT;
+	    break;
+	 case 'j':
+	    buf->cons_delay -= DELAY_INCREMENT;
+	    break;
+      }
+      /* prevent underflow */
+      if (buf->prod_delay < DELAY_INCREMENT)
+	 buf->prod_delay = DELAY_INCREMENT;
+      if (buf->cons_delay < DELAY_INCREMENT)
+	 buf->cons_delay = DELAY_INCREMENT;
+   }
+}
+
+void printThreadsMain(uint16_t * sys){
+   serial_init();
+   clear_screen();
+   while(1) {
+      printSys( (system_t *) sys);
+      getKeys();
+   }
+}
+
 void display_bounded_buffer(buffer_t *buf){
    serial_init();
    uint16_t i;

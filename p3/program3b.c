@@ -12,14 +12,22 @@
 #define SORT_TS 100
 #define DISP_TS 128
 
-signals_t * signals;
-uint8_t * copy;         //storage array
-
 typedef struct signals_t {
    mutex_t *initThreads;
    uint8_t numCreated;
    semaphore_t *done;
 } signals_t;
+
+signals_t * signals;
+uint8_t * copy;         //storage array
+
+void printThreadsMain(uint16_t *sys){
+   serial_init();
+   clear_screen();
+   while(1){
+      printSys((system_t *) sys);
+   }
+}
 
 void init_signals(signals_t * s){
    s->initThreads = malloc(sizeof(mutex_t));
@@ -44,7 +52,7 @@ void merge(uint8_t *array, INDEX start, INDEX mid, INDEX end, uint8_t * sorted){
          sorted[i] = array[start];
          start++;
       }else{
-         sorted[i] = arrary[j];
+         sorted[i] = array[j];
          j++;
       }
    }
@@ -56,7 +64,7 @@ void sort(uint8_t *array, INDEX start, INDEX end, uint8_t *sorted){
       mid = (end-start)/2;
       sort(sorted, start, mid, array);
       sort(sorted, mid, end, array);
-      merge(array, start, end, sorted);
+      merge(array, start, mid, end, sorted);
    }
 }
 
@@ -64,6 +72,7 @@ void mt_sort(uint8_t *array){
    TID_T myID;
    uint16_t start;
    uint16_t end;
+   uint16_t i;
 
    mutex_lock(signals->initThreads);
    myID = signals->numCreated;
@@ -86,14 +95,24 @@ void mt_sort(uint8_t *array){
       
       sort(copy, start, end, array); 
       
-      sem_signal(signal->done);
-      sem_wait(signal->done);
+      sem_signal(signals->done);
+      sem_wait(signals->done);
+      
+      mutex_lock(signals->initThreads); //for restarting
       if(myID==1){
-         merge(sorted, 0, ARRAY_SIZE/2, array);
-         merge(sorted, ARRAY_SIZE/2, ARRAY_SIZE, array);
-         merge(array, 0, ARRAY_SIZE, sorted);
+         merge(array, 0, ARRAY_SIZE/4, ARRAY_SIZE/2, copy);
+         merge(array, ARRAY_SIZE/2, ARRAY_SIZE*3/4, ARRAY_SIZE, copy);
+         merge(copy, 0, ARRAY_SIZE/2, ARRAY_SIZE, array);
          thread_sleep(1000);
+         
          //restart
+         init_array(array);
+         //signal others to wait on mutex
+         sem_signal_swap(signals->done);
+         sem_signal_swap(signals->done);
+         sem_signal_swap(signals->done);
+         //reset sem
+         sem_init(signals->done, 1-NUM_THREADS);
       }
    }
 }
@@ -106,7 +125,7 @@ int main(int argc, char **argv){
    init_signals(signals);
 
    array = malloc(ARRAY_SIZE);
-   init_toSort(array);
+   init_array(array);
 
    sys = os_init_noMain();
 
