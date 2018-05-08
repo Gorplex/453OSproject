@@ -120,6 +120,12 @@ void mt_sort(uint8_t *array){
    }
 }
 
+void displayMain(){
+   while(1){
+
+   }
+}
+
 int main(int argc, char **argv){
    system_t * sys;
    uint8_t *array;
@@ -133,16 +139,18 @@ int main(int argc, char **argv){
    screem = malloc(sizeof(mutex_t));
    mutex_init(screem);
 
+   serial_init();
+   clear_screen();
    sys = os_init();
 
-   create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
+   //create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
    //create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
-   //create_thread("display", (uint16_t) &display, array, DISP_TS);
+   //create_thread("display", (uint16_t) &displayMain, array, DISP_TS);
    
    os_start();
    //should not return here
    while(1){
-
+      printSys(sys);
    }
 }
 

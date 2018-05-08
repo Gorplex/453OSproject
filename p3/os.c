@@ -76,15 +76,15 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 void os_start(){
    uint16_t trash;
    //if cur thread is 0 main needs to be saved if -1 main context is discarded
-   if(sys->curThread==0){
-      yield();
-   }else{
+   if(sys->curThread==NOT_THREAD){
       sys->curThread = get_next_thread();
       sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
       sys->threads[sys->curThread].cur_count++;
       sys->cur_count++;
       sei();
       context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
+   }else{
+      yield();
    }
 }
 
@@ -104,7 +104,8 @@ uint8_t get_next_thread(){
    uint8_t next;
    check_sleeping_threads();
    next = (sys->curThread+1)%sys->threadCount;
-   while(sys->threads[next].thread_status != THREAD_READY){
+   while(sys->threads[next].thread_status != THREAD_READY
+      && sys->threads[next].thread_status != THREAD_RUNNING){
       next = (next+1)%sys->threadCount;
    }
    return next;

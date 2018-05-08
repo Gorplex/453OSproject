@@ -229,7 +229,7 @@ int main(int argc, char **argv){
    os_start();
    sei();      //just to be sure
    while(1){
-      sei();   //just to be extra sure
+      yield();
    }
 }
 
