@@ -12,7 +12,7 @@
 #define BLINK_TS 0
 
 #define BUF_SIZE 10        //circular queue
-#define PROD_DELAY 2000    //ms initial delay for producer
+#define PROD_DELAY 1000    //ms initial delay for producer
 #define CONS_DELAY 1000    //ms initial delay for consumer
 #define DELAY_INCREMENT 50  //ms each keypress
 

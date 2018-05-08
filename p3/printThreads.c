@@ -18,7 +18,7 @@ void printThread(thread_t thread) {
    set_color(CYAN);
    print_string("\r\n\tStack Base:\t");  set_color(BR_CYAN);    print_hex(thread.stackBase);
    set_color(WHITE);
-   print_string("\r\n\tStack End:\t");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
+   print_string("\tStack End: ");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
    set_color(RED);
    print_string("\r\n\tThread Status:\t");   set_color(BR_RED);   
    //extra spacing to overwrite longer words
@@ -90,6 +90,11 @@ void getKeys() {
 	    buf->cons_delay -= DELAY_INCREMENT;
 	    break;
       }
+      /* prevent underflow */
+      if (buf->prod_delay < DELAY_INCREMENT)
+	 buf->prod_delay = DELAY_INCREMENT;
+      if (buf->cons_delay < DELAY_INCREMENT)
+	 buf->cons_delay = DELAY_INCREMENT;
    }
 }
 

@@ -74,6 +74,7 @@ void display_bounded_buffer(buffer_t *buf){
    }
 }
 void producer(buffer_t *buf){
+   int i = 0;
    serial_init();
    while(1){
       //wait for consumer
@@ -120,7 +121,7 @@ void consumer(buffer_t *buf){
       print_int(buf->buf[(buf->start+BUF_SIZE-1)%BUF_SIZE]);
       mutex_unlock(screem);
       
- 
+
       sem_signal(buf->notFull); 
       thread_sleep(buf->cons_delay/MS_PER_TICK);
    }
