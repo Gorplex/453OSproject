@@ -48,8 +48,9 @@ void printThread(thread_t thread) {
 void printSys(system_t * sys) {
    TID_T i;
    mutex_lock(screem);
-   if(sys->time == 1)		/* TODO: why is this needed? */
-      clear_screen();
+   //don't need
+   //if(sys->time == 1)		//TODO: why is this needed?
+   //   clear_screen();
 
    set_cursor(1,1);
    set_color(CYAN);

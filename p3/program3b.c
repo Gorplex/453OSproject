@@ -151,6 +151,7 @@ int main(int argc, char **argv){
    //should not return here
    while(1){
       printSys(sys);
+      yield();
    }
 }
 
