@@ -73,16 +73,18 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
 }
 
 void os_start(){
-   uint16_t last;
-   //main is now saved as a thread and returned to
-   last = sys->curThread;
-   sys->curThread = get_next_thread();
-   sys->threads[last].thread_status = THREAD_READY;
-   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sys->threads[sys->curThread].cur_count++;
-   sys->cur_count++;
-   sei();
-   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
+   uint16_t trash;
+   //if cur thread is 0 main needs to be saved if -1 main context is discarded
+   if(sys->curThread==0){
+      thread_swap(get_next_thread());
+   }else{
+      sys->curThread = get_next_thread();
+      sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
+      sys->threads[sys->curThread].cur_count++;
+      sys->cur_count++;
+      sei();
+      context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
+   }
 }
 
 //project 3 func
@@ -194,7 +196,6 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
 //This interrupt routine is automatically run every 10 milliseconds
 ISR(TIMER0_COMPA_vect) {
    //END SENG
-   uint8_t last;
 
    //START SENG
    //At the beginning of this ISR, the registers r0, r1, and r18-31 have 
@@ -215,14 +216,7 @@ ISR(TIMER0_COMPA_vect) {
    //END SENG
    
    sys->mtime += MS_PER_TICK;
-   last = sys->curThread;
-   sys->curThread = get_next_thread();
-   sys->threads[last].thread_status = THREAD_READY;
-   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sys->threads[sys->curThread].cur_count++;
-   sys->cur_count++;
-   sei();//CHECK
-   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
+   thread_swap(get_next_thread());//CHECK SWAP
 }
 
 //next two functions for p3
@@ -278,27 +272,28 @@ void thread_sleep(uint16_t ticks){
       sys->threads[sys->curThread].wakeup_time = sys->mtime + ticks*MS_PER_TICK;
       sys->threads[sys->curThread].thread_status=THREAD_SLEEPING;
       yield();
-      //RETURN HER CHECK CURRENT 
+      //RETURN HERE CHECK CURRENT 
    }
 }
 
 void yield(){
-   uint8_t last;
-   
-   cli();
-   last = sys->curThread;
-   sys->curThread = get_next_thread();
-   if(sys->threads[last].thread_status == THREAD_RUNNING){
-      sys->threads[last].thread_status = THREAD_READY;
-   }
-   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sys->threads[sys->curThread].cur_count++;
-   sys->cur_count++;
-   sei();//CHECK
-   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
-
+   thread_swap(get_next_thread());
 }
 
 uint16_t get_thread_id(){
    return sys->curThread;   
 }
+
+void thread_swap(TID_T next){
+   TID_T last;
+   cli();
+   last = sys->curThread;
+   sys->curThread = next;
+   sys->threads[last].thread_status = THREAD_READY;
+   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
+   sys->threads[sys->curThread].cur_count++;
+   sys->cur_count++;
+   sei();//CHECK
+   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
+}
+

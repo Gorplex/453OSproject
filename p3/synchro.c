@@ -64,22 +64,28 @@ void sem_wait(struct semaphore_t* s){
 void sem_signal(struct semaphore_t* s){
    TID_T tid;
    cli();
-   //0 ok because 1 key is being released (incremented after)
-   if(s->keys >= 0 && s->queue.size > 0){
+   s->keys++; 
+   if(s->keys > 0 && s->queue.size > 0){
       tid = s->queue.q[s->queue.start];
       s->queue.start = (s->queue.start+1)%MAX_THREADS;
       s->queue.size--;
       sys->threads[tid].thread_status = THREAD_READY;
    }
-   s->keys++; 
    sei();
 }
 //always switch to thread from waitlist?
 //or just enable from waitlist and let round robin decide?
 //currently lets round robin handle who should be next
 void sem_signal_swap(struct semaphore_t* s){
-   sem_signal(s);
-   //may get intrupted here, thats OK
-   yield();
+   TID_T tid;
+   cli();
+   s->keys++; 
+   if(s->keys > 0 && s->queue.size > 0){
+      tid = s->queue.q[s->queue.start];
+      s->queue.start = (s->queue.start+1)%MAX_THREADS;
+      s->queue.size--;
+      thread_swap(tid);
+   }
+   sei();
 }
 
