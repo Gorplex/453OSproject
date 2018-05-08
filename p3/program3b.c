@@ -70,24 +70,32 @@ void mt_sort(uint8_t *array){
    while(signals->numCreated <= NUM_THREADS){
       create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
    }
-   copy = malloc(ARRAY_SIZE);
-   for(i=0;i<ARRAY_SIZE;i++){
-      copy[i]=array[i];
+   if(myID==1){
+      copy = malloc(ARRAY_SIZE);
    }
-   mutex_unlock(signals->initThreads);
-   
-   //done creating, include start, not end
-   start = ARRAY_SIZE*(myID-1)/NUM_THREADS; 
-   end = ARRAY_SIZE*(myID)/NUM_THREADS; 
-   
-   sort(copy, start, end, array); 
-   
-   sem_signal(signal->done);
-   sem_wait(signal->done);
-   
-   merge(sorted, 0, ARRAY_SIZE/2, array);
-   merge(sorted, ARRAY_SIZE/2, ARRAY_SIZE, array);
-   merge(array, 0, ARRAY_SIZE, sorted);
+   while(1){
+      if(myID==1){
+         for(i=0;i<ARRAY_SIZE;i++){
+            copy[i]=array[i];
+         }
+      }
+      mutex_unlock(signals->initThreads);
+      //ALL START
+      start = ARRAY_SIZE*(myID-1)/NUM_THREADS; 
+      end = ARRAY_SIZE*(myID)/NUM_THREADS; 
+      
+      sort(copy, start, end, array); 
+      
+      sem_signal(signal->done);
+      sem_wait(signal->done);
+      if(myID==1){
+         merge(sorted, 0, ARRAY_SIZE/2, array);
+         merge(sorted, ARRAY_SIZE/2, ARRAY_SIZE, array);
+         merge(array, 0, ARRAY_SIZE, sorted);
+         thread_sleep(1000);
+         //restart
+      }
+   }
 }
 
 int main(int argc, char **argv){
