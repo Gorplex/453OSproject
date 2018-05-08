@@ -9,7 +9,7 @@
 #define MAX_VAL 255
 #define NUM_THREADS 4   //number of sorting threads
 
-#define SORT_TS 200
+#define SORT_TS 500
 #define DISP_TS 200
 
 #define SHORT_DELAY 100
@@ -26,10 +26,14 @@ typedef struct signals_t {
 } signals_t;
 
 signals_t * signals;
+extern system_t *sys;
+
 
 void printThreadsMain(uint16_t *sys){
    while(1){
+      mutex_lock(screem);
       printSys((system_t *) sys);
+      mutex_unlock(screem);
    }
 }
 
@@ -72,17 +76,34 @@ void sort(uint8_t *array, INDEX start, INDEX end, uint8_t *sorted){
    }
 }
 
+void staller(){
+   while(1){
+      //set_cursor(40,60);
+      //print_string("THIS IS PRINTING");
+   }
+}
+
 void mt_sort(uint8_t *array){
    TID_T myID;
    uint16_t start;
    uint16_t end;
    uint16_t i;
    
-   thread_sleep(LONG_DELAY);
+   thread_sleep(MED_DELAY);
    mutex_lock(signals->initThreads);
    myID = signals->numCreated;
    while(signals->numCreated <= NUM_THREADS){
-      create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+      signals->numCreated++;
+      
+      //create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+      create_thread_live("staller spawned", (uint16_t) &staller, NULL, 10);
+      cli();
+      
+      printSys(sys); 
+      while(1){
+         set_cursor(60,40);
+         print_string("IM HERE");
+      }
       thread_sleep(MED_DELAY);
    }
    while(1){

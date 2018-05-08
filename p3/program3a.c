@@ -35,7 +35,9 @@ void getKeys() {
 
 void printThreadsMain(uint16_t * sys){
    while(1) {
+      mutex_lock(screem);
       printSys( (system_t *) sys);
+      mutex_unlock(screem);
       getKeys();
    }
 }
