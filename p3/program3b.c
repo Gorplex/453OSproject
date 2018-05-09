@@ -9,7 +9,7 @@
 #define MAX_VAL 255
 #define NUM_THREADS 4   //number of sorting threads
 
-#define SORT_TS 500
+#define SORT_TS 2000
 #define DISP_TS 200
 
 #define SHORT_DELAY 100
@@ -70,14 +70,15 @@ void merge(uint8_t *array, INDEX start, INDEX mid, INDEX end, uint8_t * sorted){
 
 void sort(uint8_t *array, INDEX start, INDEX end, uint8_t *sorted){
    INDEX mid;
+   //thread_sleep(50);
    if(end-start > 1){
-      mid = (end-start)/2;
+      mid = (end-start)/2+start;
       sort(sorted, start, mid, array);
-      thread_sleep(SHORT_DELAY);
+      //thread_sleep(SHORT_DELAY);
       sort(sorted, mid, end, array);
-      thread_sleep(SHORT_DELAY);
+      //thread_sleep(SHORT_DELAY);
       merge(array, start, mid, end, sorted);
-      thread_sleep(SHORT_DELAY);
+      //thread_sleep(SHORT_DELAY);
    }
 }
 
@@ -86,6 +87,25 @@ void staller(){
    while(1){
       //set_cursor(40,60);
       //print_string("THIS IS PRINTING");
+   }
+}
+
+void st_sort(uint8_t * array){
+   INDEX i;
+   
+   while(1){ 
+      thread_sleep(MED_DELAY);
+      for(i=0;i<ARRAY_SIZE;i++){
+         copy[i]=array[i];
+      }
+      thread_sleep(MED_DELAY);
+      sort(copy, 0, ARRAY_SIZE, array);
+      thread_sleep(LONG_DELAY);
+      init_array(array);
+      mutex_lock(screem);
+      set_cursor(60,40);
+      print_string("random");
+      mutex_unlock(screem);
    }
 }
 
@@ -183,7 +203,7 @@ void printArrayCol(uint16_t row,uint16_t col, uint8_t * array, INDEX index){
    INDEX i;
    for(i=0;i<ARRAY_SIZE/4;i++){
       set_cursor(row+i,col);
-      print_int(array[i+index]);
+      print_int_spaces(array[i+index]);
    }
 }
 
@@ -244,6 +264,7 @@ int main(int argc, char **argv){
    sys = os_init_noMain();
 
    create_thread("stats", (uint16_t) &printThreadsMain, sys, PRINT_THREAD_SIZE);
+   //create_thread("sort", (uint16_t) &st_sort, array, SORT_TS);
    create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("display", (uint16_t) &displayMain, array, DISP_TS);
    create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
@@ -252,7 +273,7 @@ int main(int argc, char **argv){
    sys->threadCount--;
    sys->threadCount--;
    sys->threadCount--;
-
+   
    os_start();
    //should not return here
 }
