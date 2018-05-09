@@ -6,10 +6,10 @@ CFILES  = os.c synchro.c printThreads.c serial.c
 #DEVICE = /dev/tty.usbmodem1431
 
 #Linux (/dev/ttyACM0 or possibly /dev/ttyUSB0)
-#DEVICE = /dev/ttyACM0 
+DEVICE = /dev/ttyACM0 
 
 #Windows
-DEVICE = COM10 
+#DEVICE = COM10 
 
 #default target to compile the code
 default: p3a
@@ -40,12 +40,12 @@ clean:
 #luke stuff
 #OUT OF DATE
 handinLuke: *.c *.h Makefile
-	scp $^ calpoly3:~/cpe453/p2_threads
-	ssh calpoly3 "cd ~/cpe453/p2_threads; handin jseng 453_program2_7 *"
+	scp $^ calpoly3:~/cpe453/p3_synchro
+	ssh calpoly3 "cd ~/cpe453/p3_synchro; handin jseng 453_program3_7 *"
 
 
 handinJohn:
-	scp *.c *.h Makefile jmthomse@unix3.csc.calpoly.edu:~/cpe453/p/2
-	ssh jmthomse@unix3.csc.calpoly.edu "cd ~/cpe453/p/2; handin jseng 453_program2_7 *"
+	scp *.c *.h Makefile jmthomse@unix3.csc.calpoly.edu:~/cpe453/p/3
+	ssh jmthomse@unix3.csc.calpoly.edu "cd ~/cpe453/p/3; handin jseng 453_program3_7 *"
 
 

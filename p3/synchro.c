@@ -23,7 +23,6 @@ void mutex_lock(struct mutex_t* m){
       m->owner = tid;
       sei();
    }
-   sei();//CHECK should not need
 }
 void mutex_unlock(struct mutex_t* m){
    TID_T tid;
@@ -59,7 +58,6 @@ void sem_wait(struct semaphore_t* s){
       s->keys--;
       sei();
    }
-   sei();//CHECK should not need
 }
 void sem_signal(struct semaphore_t* s){
    TID_T tid;

@@ -82,7 +82,6 @@ void os_start(){
       sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
       sys->threads[sys->curThread].cur_count++;
       sys->cur_count++;
-      //sei(); is now down at the end of context switch
       context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
    }else{
       yield();
@@ -189,8 +188,6 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    asm volatile("pop r4"); 
    asm volatile("pop r3"); 
    asm volatile("pop r2");
-   
-   asm volatile("sei");
 
    //return
    asm volatile("ret");
@@ -299,8 +296,8 @@ void thread_swap(TID_T next){
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sys->threads[sys->curThread].cur_count++;
    sys->cur_count++;
-   //sei();//CHECK moved into context switch
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
+   sei();
 }
 
 void create_thread_live(char* name, uint16_t address, void* args, uint16_t stack_size){

@@ -55,10 +55,6 @@ void printThread(thread_t thread) {
 
 void printSys(system_t * sys) {
    TID_T i;
-   //mutex_lock(screem);   //NOW CALLED B4 OR AFTER IF NEEDED
-   //don't need
-   //if(sys->time == 1)		//TODO: why is this needed?
-   //   clear_screen();
 
    set_cursor(1,1);
    set_color(CYAN);
@@ -75,6 +71,5 @@ void printSys(system_t * sys) {
       print_string("\r\nThread ID: ");    print_int(i);
       printThread( sys->threads[i] );
    }
-   //mutex_unlock(screem);   //NOW CALLED B4 OR AFTER IF NEEDED
 }
  
