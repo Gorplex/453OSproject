@@ -46,6 +46,7 @@ void create_thread(char* name, uint16_t address, void* args, uint16_t stack_size
    regs_context_switch * regs;
    //setup sys thread
    sys->threads[sys->threadCount].name=name;
+   sys->threads[sys->threadCount].pc=address;
    sys->threads[sys->threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
    sys->threads[sys->threadCount].stackEnd =
       sys->threads[sys->threadCount].stackBase + stack_size + REGSIZE;
@@ -81,7 +82,7 @@ void os_start(){
       sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
       sys->threads[sys->curThread].cur_count++;
       sys->cur_count++;
-      sei();
+      //sei(); is now down at the end of context switch
       context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
    }else{
       yield();
@@ -188,10 +189,11 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    asm volatile("pop r4"); 
    asm volatile("pop r3"); 
    asm volatile("pop r2");
+   
+   asm volatile("sei");
 
    //return
    asm volatile("ret");
-
 }
 
 //START SENG
@@ -297,7 +299,7 @@ void thread_swap(TID_T next){
    sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
    sys->threads[sys->curThread].cur_count++;
    sys->cur_count++;
-   sei();//CHECK
+   //sei();//CHECK moved into context switch
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
 }
 
