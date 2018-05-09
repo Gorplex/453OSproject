@@ -65,7 +65,7 @@ void sem_signal(struct semaphore_t* s){
    TID_T tid;
    cli();
    s->keys++; 
-   if(s->keys > 0 && s->queue.size > 0){
+   if(s->keys <= 0 && s->queue.size > 0){
       tid = s->queue.q[s->queue.start];
       s->queue.start = (s->queue.start+1)%MAX_THREADS;
       s->queue.size--;
@@ -78,7 +78,7 @@ void sem_signal_swap(struct semaphore_t* s){
    TID_T tid;
    cli();
    s->keys++; 
-   if(s->keys > 0 && s->queue.size > 0){
+   if(s->keys <= 0 && s->queue.size > 0){
       tid = s->queue.q[s->queue.start];
       s->queue.start = (s->queue.start+1)%MAX_THREADS;
       s->queue.size--;
