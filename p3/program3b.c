@@ -9,7 +9,7 @@
 #define MAX_VAL 255
 #define NUM_THREADS 4   //number of sorting threads
 
-#define SORT_TS 2000
+#define SORT_TS 500
 #define DISP_TS 200
 
 #define SHORT_DELAY 100
@@ -28,7 +28,6 @@ typedef struct signals_t {
 
 signals_t * signals;
 extern system_t *sys;
-
 
 void printThreadsMain(uint16_t *sys){
    while(1){
@@ -115,14 +114,17 @@ void mt_sort(uint8_t *array){
    uint16_t end;
    uint16_t i;
    
+   printm(GREEN, 69+signals->numCreated, 48,"Run");
    mutex_lock(signals->initThreads);
    signals->takenID++;
    myID = signals->takenID;
+   start = ARRAY_SIZE*(myID-1)/NUM_THREADS; 
+   end = ARRAY_SIZE*(myID)/NUM_THREADS; 
    if(myID == 1){
       printm(GREEN, 70, 40,"T1:");
-      printm(GREEN, 71, 40,"T1:");
-      printm(GREEN, 72, 40,"T1:");
-      printm(GREEN, 73, 40,"T1:");  
+      printm(GREEN, 71, 40,"T2:");
+      printm(GREEN, 72, 40,"T3:");
+      printm(GREEN, 73, 40,"T4:");  
       printm(RED, 69, 20,"--MASTER LOG--");  
    }
    while(signals->numCreated < NUM_THREADS){
@@ -131,7 +133,7 @@ void mt_sort(uint8_t *array){
       signals->numCreated++;
       sys->threadCount++;
       //create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
-      printm(GREEN, 69+signals->numCreated, 45,"Created");
+      printm(GREEN, 69+signals->numCreated, 44,"Cre");
 
       //ALL CRAZY TESTS
       //create_thread_live("staller spawned", (uint16_t) &staller, NULL, 100);
@@ -169,25 +171,23 @@ void mt_sort(uint8_t *array){
       }
       mutex_unlock(signals->initThreads);
       //ALL START
-      printm(GREEN,69+myID, 55,"Starting");
-      
-      start = ARRAY_SIZE*(myID-1)/NUM_THREADS; 
-      end = ARRAY_SIZE*(myID)/NUM_THREADS; 
+      printm(GREEN,69+myID, 52,"Start");
       
       sort(copy, start, end, array); 
       
-      printm(GREEN,69+myID, 65,"Done");
+      printm(GREEN,69+myID, 58,"Done");
       
       if(myID==1){
          mutex_lock(signals->initThreads); //for restarting
          printm(GREEN, 72, 20,"T1 DONE TAKEN MUTEX");
+         thread_sleep(1000);
       }
       
       //wait for all threads here then all continue to get stuck on mutex
       sem_signal(signals->done);
       sem_wait(signals->done);
       sem_signal(signals->done);
-      printm(GREEN,76+myID, 70,"Synced");
+      printm(GREEN,76+myID, 65,"Synced");
       
       //if not ID 1 get stoped else ID 1 finishes and inits 
       if(myID != 1){
@@ -279,13 +279,16 @@ int main(int argc, char **argv){
    create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+   //EXTRA 5th on no used testing bug
+   create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+   sys->threadCount--;
    
    sys->threadCount--;
-   sys->threads[sys->threadCount].thread_status=THREAD_WAITING; 
+   //sys->threads[sys->threadCount].thread_status=10; 
    sys->threadCount--;
-   sys->threads[sys->threadCount].thread_status=THREAD_WAITING; 
+   //sys->threads[sys->threadCount].thread_status=10; 
    sys->threadCount--;
-   sys->threads[sys->threadCount].thread_status=THREAD_WAITING; 
+   //sys->threads[sys->threadCount].thread_status=10; 
    
    os_start();
    //should not return here

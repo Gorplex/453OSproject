@@ -73,9 +73,7 @@ void sem_signal(struct semaphore_t* s){
    }
    sei();
 }
-//always switch to thread from waitlist?
-//or just enable from waitlist and let round robin decide?
-//currently lets round robin handle who should be next
+
 void sem_signal_swap(struct semaphore_t* s){
    TID_T tid;
    cli();
