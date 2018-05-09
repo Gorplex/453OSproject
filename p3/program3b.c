@@ -153,11 +153,11 @@ void mt_sort(uint8_t *array){
       
       //wait for all threads here then all continue to get stuck on mutex
       printm(GREEN,69+myID, 64,"Signaled");
-      /* mutex_lock(screem); */
-      /* set_cursor(80+myID,75); */
-      /* print_int_spaces(signals->done->keys); */
-      /* print_int_spaces(signals->done->queue.q[signals->done->queue.start]); */
-      /* mutex_unlock(screem); */
+      /* mutex_lock(screem);
+      set_cursor(80+myID,75);
+      print_int_spaces(signals->done->keys);
+      print_int_spaces(signals->done->queue.q[signals->done->queue.start]);
+      mutex_unlock(screem); */
 
       sem_wait(signals->done);
       sem_signal(signals->done);
@@ -180,10 +180,19 @@ void mt_sort(uint8_t *array){
          sem_wait(signals->done);
          sem_init(signals->done, 0);
 
-	 mutex_lock(screem);
-	 clear_screen();
-	 mutex_unlock(screem);
-	 
+	   mutex_lock(screem);
+	   //clear_screen();
+	   //set_cursor(20,20);
+	   //set_color(BR_RED);
+      //print_string("============NOT A CRASH RESTARTING===============");
+      //thread_sleep(200);
+	   clear_screen();
+      mutex_unlock(screem);
+      printm(GREEN, 70, 40,"T1:");
+      printm(GREEN, 71, 40,"T2:");
+      printm(GREEN, 72, 40,"T3:");
+      printm(GREEN, 73, 40,"T4:");  
+      printm(RED, 69, 20,"--MASTER LOG--");  
       }
    }
 }
@@ -260,6 +269,7 @@ int main(int argc, char **argv){
    create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
    
+   //theads enabled by sort while running
    sys->threadCount--;
    sys->threadCount--;
    sys->threadCount--;

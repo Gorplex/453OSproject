@@ -263,6 +263,9 @@ __attribute__((naked)) void thread_start(void) {
    asm volatile("movw r30, r2"); 
    asm volatile("movw r24, r4"); 
    asm volatile("ijmp");
+
+   sys->threads[sys->curThread].thread_status = THREAD_ENDED;
+   thread_swap(get_next_thread());
 }
 
 //project 3

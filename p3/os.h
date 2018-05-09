@@ -13,10 +13,11 @@
 
 #define REGSIZE 45  //41 used with empty function
 
-#define THREAD_RUNNING  0     //thread is currently running
-#define THREAD_READY     1    //thread is ready to be run
-#define THREAD_SLEEPING  2    //set from call to thread_sleep()
-#define THREAD_WAITING   3    //waiting on mutex or semaphore
+#define THREAD_RUNNING     0  //thread is currently running
+#define THREAD_READY       1  //thread is ready to be run
+#define THREAD_SLEEPING    2  //set from call to thread_sleep()
+#define THREAD_WAITING     3  //waiting on mutex or semaphore
+#define THREAD_ENDED       4  //run off end of function
 
 #define MS_PER_TICK 10        //10 ms between each thread swap
 

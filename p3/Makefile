@@ -6,10 +6,10 @@ CFILES  = os.c synchro.c printThreads.c serial.c
 #DEVICE = /dev/tty.usbmodem1431
 
 #Linux (/dev/ttyACM0 or possibly /dev/ttyUSB0)
-DEVICE = /dev/ttyACM0 
+#DEVICE = /dev/ttyACM0 
 
 #Windows
-#DEVICE = COM10 
+DEVICE = COM10 
 
 #default target to compile the code
 default: p3a
