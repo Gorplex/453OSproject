@@ -115,33 +115,34 @@ void mt_sort(uint8_t *array){
    uint16_t end;
    uint16_t i;
    
-   thread_sleep(MED_DELAY);
    mutex_lock(signals->initThreads);
    signals->takenID++;
    myID = signals->takenID;
-   while(signals->numCreated <= NUM_THREADS-1){
-      signals->numCreated++;
+   if(myID == 1){
+      printm(GREEN, 70, 40,"T1:");
+      printm(GREEN, 71, 40,"T1:");
+      printm(GREEN, 72, 40,"T1:");
+      printm(GREEN, 73, 40,"T1:");  
+      printm(RED, 69, 20,"--MASTER LOG--");  
+   }
+   while(signals->numCreated < NUM_THREADS){
       
+      thread_sleep(MED_DELAY);
+      signals->numCreated++;
       sys->threadCount++;
       //create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
-      
+      printm(GREEN, 69+signals->numCreated, 45,"Created");
+
+      //ALL CRAZY TESTS
       //create_thread_live("staller spawned", (uint16_t) &staller, NULL, 100);
       //cli();
-      
       //context_switch(&(sys->threads[3].stackPtr), &(sys->threads[3].stackPtr));
       
       //sys->threads[3].wakeup_time = 5000;
       //sys->threads[3].thread_status = THREAD_SLEEPING;
       //printSys(sys); 
-      //os_start();
 
       /*set_cursor(56,40);
-      print_int(screem->locked);
-      set_cursor(57,40);
-      print_int(screem->owner);
-      set_cursor(58,40);
-      print_string("IM HERE 0");
-      //mutex_lock(screem);
       set_cursor(59,40);
       print_string("IM HERE 1");
       //yield(); */
@@ -153,35 +154,45 @@ void mt_sort(uint8_t *array){
          print_string("IM HERE");
          set_cursor(61,40);
          print_int(i++);
-         set_cursor(62,40);
-         print_hex(thread_start);
-         set_cursor(63,40);
-         print_hex(staller);
-         mutex_unlock(screem);
          yield();
       }*/
-      thread_sleep(MED_DELAY);
    }
    while(1){
       if(myID==1){
+         printm(GREEN, 70, 20,"Done Creating");
+         thread_sleep(MED_DELAY);
          for(i=0;i<ARRAY_SIZE;i++){
             copy[i]=array[i];
          }
-         thread_sleep(1000);
+         printm(GREEN, 71, 20,"Sorted -> Copy");
+         thread_sleep(MED_DELAY);
       }
       mutex_unlock(signals->initThreads);
       //ALL START
+      printm(GREEN,69+myID, 55,"Starting");
+      
       start = ARRAY_SIZE*(myID-1)/NUM_THREADS; 
       end = ARRAY_SIZE*(myID)/NUM_THREADS; 
       
       sort(copy, start, end, array); 
       
+      printm(GREEN,69+myID, 65,"Done");
+      
+      if(myID==1){
+         mutex_lock(signals->initThreads); //for restarting
+         printm(GREEN, 72, 20,"T1 DONE TAKEN MUTEX");
+      }
+      
+      //wait for all threads here then all continue to get stuck on mutex
       sem_signal(signals->done);
       sem_wait(signals->done);
+      sem_signal(signals->done);
+      printm(GREEN,76+myID, 70,"Synced");
       
-      mutex_lock(signals->initThreads); //for restarting
-      //if im the first one else skip
-      if(signals->done->keys == -3){       //if(myID==1){
+      //if not ID 1 get stoped else ID 1 finishes and inits 
+      if(myID != 1){
+         mutex_lock(signals->initThreads); //for restarting
+      }else{//if(myID==1){
          merge(array, 0, ARRAY_SIZE/4, ARRAY_SIZE/2, copy);
          merge(array, ARRAY_SIZE/2, ARRAY_SIZE*3/4, ARRAY_SIZE, copy);
          merge(copy, 0, ARRAY_SIZE/2, ARRAY_SIZE, array);
@@ -189,11 +200,9 @@ void mt_sort(uint8_t *array){
          
          //restart
          init_array(array);
-         //signal others to wait on mutex
-         sem_signal_swap(signals->done);
-         sem_signal_swap(signals->done);
-         sem_signal_swap(signals->done);
-         //reset sem
+         
+         //reset sem after you make sure all made it through
+         sem_wait(signals->done);
          sem_init(signals->done, 1-NUM_THREADS);
       }
    }
@@ -267,12 +276,16 @@ int main(int argc, char **argv){
    //create_thread("sort", (uint16_t) &st_sort, array, SORT_TS);
    create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("display", (uint16_t) &displayMain, array, DISP_TS);
-   create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
-   create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
-   create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+   create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+   create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+   create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+   
    sys->threadCount--;
+   sys->threads[sys->threadCount].thread_status=THREAD_WAITING; 
    sys->threadCount--;
+   sys->threads[sys->threadCount].thread_status=THREAD_WAITING; 
    sys->threadCount--;
+   sys->threads[sys->threadCount].thread_status=THREAD_WAITING; 
    
    os_start();
    //should not return here

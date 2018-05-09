@@ -3,6 +3,14 @@
 
 struct mutex_t * screem;		/* screen mutex */
 
+void printm(uint8_t color, uint8_t row, uint8_t col, char * str){
+   mutex_lock(screem);
+   set_color(color);
+   set_cursor(row,col);
+   print_string(str);
+   mutex_unlock(screem);
+}
+
 void printThread(thread_t thread) {
    set_color(RED);
    print_string("\tName:\t"); set_color(BR_RED);     print_string(thread.name);

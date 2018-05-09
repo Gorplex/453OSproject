@@ -6,7 +6,9 @@
 #include "synchro.h"
 
 #define PRINT_THREAD_SIZE 1000
+
 void printThread(thread_t thread);
 void printSys(system_t * sys);
-void printThreadsMain(uint16_t * sys);
+void printm(uint8_t color, uint8_t row, uint8_t col, char * str);
+
 #endif
