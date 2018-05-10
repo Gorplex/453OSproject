@@ -302,10 +302,44 @@ void thread_swap(TID_T next){
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
    sei();
 }
+void malloc_thread_stack(TID_T tid, uint16_t stack_size){
+   sys->threads[tid].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
+}
 
 void create_thread_live(char* name, uint16_t address, void* args, uint16_t stack_size){
+   regs_context_switch * regs;
+   
    cli();
-   create_thread(name, address, args, stack_size);
+   //setup sys thread
+   sys->threads[sys->threadCount].name=name;
+   sys->threads[sys->threadCount].pc=address;
+   //left out for live
+   //sys->threads[sys->threadCount].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
+   sys->threads[sys->threadCount].stackEnd =
+      sys->threads[sys->threadCount].stackBase + stack_size + REGSIZE;
+   sys->threads[sys->threadCount].stackPtr = (sys->threads[sys->threadCount].stackEnd
+      - sizeof(regs_context_switch));
+   sys->threads[sys->threadCount].thread_status=THREAD_READY;
+   sys->threads[sys->threadCount].cur_count=0;
+   sys->threads[sys->threadCount].sched_count=0;
+   sys->threads[sys->threadCount].wakeup_time=0;
+   
+   //setup stack
+   regs = (regs_context_switch *) sys->threads[sys->threadCount].stackPtr;
+   memset(regs, 0, sizeof(regs_context_switch));
+
+   regs->pcl = (uint8_t) ((uint16_t)thread_start);
+   regs->pch = (uint8_t) (((uint16_t)thread_start) >> 8);
+   //zero upper byte of PC
+   regs->eind = 0;              
+
+   regs->r2 = (uint8_t) address; 
+   regs->r3 = (uint8_t) (address >> 8); 
+   regs->r4 = (uint8_t) (uint16_t) args; 
+   regs->r5 = (uint8_t) (((uint16_t)args) >> 8); 
+
+   sys->threadCount++;
+
    sei();
 }
 

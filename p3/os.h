@@ -120,6 +120,7 @@ uint16_t get_thread_id();
 system_t * os_init_noMain();
 void thread_swap(TID_T next);
 void create_thread_live(char* name, uint16_t address, void* args, uint16_t stack_size);
+void malloc_thread_stack(TID_T tid, uint16_t stack_size);
 
 
 #endif

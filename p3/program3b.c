@@ -122,8 +122,8 @@ void mt_sort(uint8_t *array){
       
       thread_sleep(MED_DELAY);
       signals->numCreated++;
-      sys->threadCount++;
-      //create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
+      //sys->threadCount++;
+      create_thread_live("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
       printm(GREEN, 69+signals->numCreated, 44,"Cre");
    }
    while(1){
@@ -148,16 +148,11 @@ void mt_sort(uint8_t *array){
          mutex_lock(signals->initThreads); //for restarting
          printm(GREEN, 72, 20,"T1 DONE TAKEN MUTEX");
          thread_sleep(500);
-	 sem_signal(signals->done);
+	      sem_signal(signals->done);
       }
       
       //wait for all threads here then all continue to get stuck on mutex
       printm(GREEN,69+myID, 64,"Signaled");
-      /* mutex_lock(screem);
-      set_cursor(80+myID,75);
-      print_int_spaces(signals->done->keys);
-      print_int_spaces(signals->done->queue.q[signals->done->queue.start]);
-      mutex_unlock(screem); */
 
       sem_wait(signals->done);
       sem_signal(signals->done);
@@ -265,15 +260,12 @@ int main(int argc, char **argv){
    //create_thread("single sort", (uint16_t) &st_sort, array, SORT_TS);
    create_thread("sort", (uint16_t) &mt_sort, array, SORT_TS);
    create_thread("display", (uint16_t) &displayMain, array, DISP_TS);
-   create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
-   create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
-   create_thread("sort spawned", (uint16_t) &mt_sort, array, SORT_TS);
    
-   //theads enabled by sort while running
-   sys->threadCount--;
-   sys->threadCount--;
-   sys->threadCount--;
-   
+   //need to malloc before threads start 
+   malloc_thread_stack(3, SORT_TS);
+   malloc_thread_stack(4, SORT_TS);
+   malloc_thread_stack(5, SORT_TS);
+
    os_start();
    //should not return here
 }
