@@ -175,14 +175,21 @@ void mt_sort(uint8_t *array){
          sem_wait(signals->done);
          sem_init(signals->done, 0);
 
+      //START WIP 
 	   mutex_lock(screem);
-	   //clear_screen();
-	   //set_cursor(20,20);
-	   //set_color(BR_RED);
-      //print_string("============NOT A CRASH RESTARTING===============");
-      //thread_sleep(200);
+	   clear_screen();
+      printSys(sys);
+	   clear_screen();
+	   set_cursor(20,30);
+	   set_color(BR_RED);
+      print_string("===========NOT A CRASH==========");
+	   set_cursor(30,30);
+      print_string("===========RESTARTING===========");
+      
+      thread_sleep(200);
 	   clear_screen();
       mutex_unlock(screem);
+      //END WIP
       printm(GREEN, 70, 40,"T1:");
       printm(GREEN, 71, 40,"T2:");
       printm(GREEN, 72, 40,"T3:");

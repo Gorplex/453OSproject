@@ -1,6 +1,7 @@
 /* Written: Luke Thompson and John Thomsen */
 
 #include "os.h"
+#include "printThreads.h"  //WIP
 
 /* sys is now stored in heap space because of weird issue of sys not updating */
 system_t * sys;
@@ -82,6 +83,7 @@ void os_start(){
       sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
       sys->threads[sys->curThread].cur_count++;
       sys->cur_count++;
+      //interrupts enabled in each thread start 
       context_switch(&(sys->threads[sys->curThread].stackPtr), &trash);
    }else{
       yield();
@@ -100,6 +102,8 @@ void check_sleeping_threads(){
    }
 }
 
+//if no valid thread to swap to returns same thread
+//because it is called while interrupts are disabled
 uint8_t get_next_thread(){
    uint8_t next;
    check_sleeping_threads();
@@ -107,6 +111,9 @@ uint8_t get_next_thread(){
    while(sys->threads[next].thread_status != THREAD_READY
       && sys->threads[next].thread_status != THREAD_RUNNING){
       next = (next+1)%sys->threadCount;
+      if(next == sys->curThread){
+         break;
+      }
    }
    return next;
 }
@@ -264,8 +271,9 @@ __attribute__((naked)) void thread_start(void) {
    asm volatile("movw r24, r4"); 
    asm volatile("ijmp");
 
+   cli();//may not be nessary alows thread to end by yield() rather than by ISR
    sys->threads[sys->curThread].thread_status = THREAD_ENDED;
-   thread_swap(get_next_thread());
+   yield();
 }
 
 //project 3
@@ -281,16 +289,35 @@ void thread_sleep(uint16_t ticks){
 }
 
 void yield(){
-   thread_swap(get_next_thread());
+   TID_T next;
+   
+   cli(); 
+   next = get_next_thread();
+   sei();
+
+   while(sys->threads[next].thread_status != THREAD_READY
+      && sys->threads[next].thread_status != THREAD_RUNNING){
+      //OS STALLS HERE WHEN NO THREADS WANT TO RUN
+      //INTERRUPTS ENABLED OS TIME KEEPS TICKING
+      //LOW POWER MODE GOES HERE
+      //printSys(sys); //WIP
+   }
+   
+   cli(); 
+   thread_swap(next);
+   sei();
 }
 
 uint16_t get_thread_id(){
    return sys->curThread;   
 }
 
+//should only be called when interrupts are disabled
+//call yield when interrupts are enabled
 void thread_swap(TID_T next){
    TID_T last;
-   cli();
+   
+   //cli(); CHECK
    last = sys->curThread;
    sys->curThread = next;
    if(sys->threads[last].thread_status == THREAD_RUNNING){
@@ -300,7 +327,7 @@ void thread_swap(TID_T next){
    sys->threads[sys->curThread].cur_count++;
    sys->cur_count++;
    context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
-   sei();
+   //sei(); CHECK
 }
 void malloc_thread_stack(TID_T tid, uint16_t stack_size){
    sys->threads[tid].stackBase = (uint16_t)malloc(stack_size + REGSIZE);
