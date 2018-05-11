@@ -1,7 +1,6 @@
 /* Written: Luke Thompson and John Thomsen */
 
 #include "os.h"
-#include "printThreads.h"  //WIP
 
 /* sys is now stored in heap space because of weird issue of sys not updating */
 system_t * sys;
@@ -280,31 +279,43 @@ __attribute__((naked)) void thread_start(void) {
 //currently passes (does nothing with 0)
 //anything less than MS_PER_TICK is equivlent to yield() (with some insignificant overhead)
 void thread_sleep(uint16_t ticks){
+   TID_T next;
+   
    if(ticks){
       cli();
       sys->threads[sys->curThread].wakeup_time = sys->mtime + ticks*MS_PER_TICK;
       sys->threads[sys->curThread].thread_status=THREAD_SLEEPING;
-      yield();
+      
+      next = get_next_thread();
+      //IF ALL THREADS ARE UNAVALABLE 
+      //ENABLE INTERRUPTS (to keep time) THEN STALL
+      //ISR THREAD SWAP WILL COME BACK HERE UNLESS ANOTHER THREAD IS AVALABLE 
+      //THEN IT WILL NOT RETURN UNTILL THIS IS AVALABLE (able to leave loop)
+      //(if new thread sleeps it will loop int that thread instead)
+      if(sys->curThread == next
+         && sys->threads[next].thread_status != THREAD_READY
+         && sys->threads[next].thread_status != THREAD_RUNNING){
+         sei();
+         while(sys->threads[next].thread_status != THREAD_READY
+            && sys->threads[next].thread_status != THREAD_RUNNING){
+            //OS STALLS HERE WHEN NO THREADS WANT TO RUN
+            //INTERRUPTS ENABLED OS TIME KEEPS TICKING
+            //LOW POWER MODE GOES HERE (may need to revert to normal on ISR)
+            //avr-gcc was optomising out my while loop!!
+            asm volatile("nop");
+         }
+         cli(); 
+      }  
+      thread_swap(next);
+      sei();
    }
 }
 
 void yield(){
    TID_T next;
-   
-   cli(); 
-   next = get_next_thread();
-   sei();
 
-   while(sys->threads[next].thread_status != THREAD_READY
-      && sys->threads[next].thread_status != THREAD_RUNNING){
-      //OS STALLS HERE WHEN NO THREADS WANT TO RUN
-      //INTERRUPTS ENABLED OS TIME KEEPS TICKING
-      //LOW POWER MODE GOES HERE
-      //printSys(sys); //WIP
-   }
-   
    cli(); 
-   thread_swap(next);
+   thread_swap(get_next_thread());
    sei();
 }
 
@@ -317,17 +328,17 @@ uint16_t get_thread_id(){
 void thread_swap(TID_T next){
    TID_T last;
    
-   //cli(); CHECK
-   last = sys->curThread;
-   sys->curThread = next;
-   if(sys->threads[last].thread_status == THREAD_RUNNING){
-      sys->threads[last].thread_status = THREAD_READY;
-   }
-   sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
-   sys->threads[sys->curThread].cur_count++;
+   sys->threads[next].cur_count++;
    sys->cur_count++;
-   context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
-   //sei(); CHECK
+   if(sys->curThread != next){
+      last = sys->curThread;
+      sys->curThread = next;
+      if(sys->threads[last].thread_status == THREAD_RUNNING){
+         sys->threads[last].thread_status = THREAD_READY;
+      }
+      sys->threads[sys->curThread].thread_status = THREAD_RUNNING;
+      context_switch(&(sys->threads[sys->curThread].stackPtr), &(sys->threads[last].stackPtr));
+   }
 }
 void malloc_thread_stack(TID_T tid, uint16_t stack_size){
    sys->threads[tid].stackBase = (uint16_t)malloc(stack_size + REGSIZE);

@@ -34,6 +34,7 @@ void printThreadsMain(uint16_t *sys){
       mutex_lock(screem);
       printSys((system_t *) sys);
       mutex_unlock(screem);
+      yield();
    }
 }
 
@@ -175,7 +176,6 @@ void mt_sort(uint8_t *array){
          sem_wait(signals->done);
          sem_init(signals->done, 0);
 
-      //START WIP 
 	   mutex_lock(screem);
 	   clear_screen();
       printSys(sys);
@@ -184,12 +184,15 @@ void mt_sort(uint8_t *array){
 	   set_color(BR_RED);
       print_string("===========NOT A CRASH==========");
 	   set_cursor(30,30);
-      print_string("===========RESTARTING===========");
-      
-      thread_sleep(200);
+      print_string("=========RESTARTING SORT========");
+	   set_cursor(40,30);
+      print_string("ALL OTHER THREADS WAITING");
+	   set_cursor(41,30);
+      print_string("THIS THREAD SLEEPING 3 SEC");
+      thread_sleep(300);
 	   clear_screen();
       mutex_unlock(screem);
-      //END WIP
+      
       printm(GREEN, 70, 40,"T1:");
       printm(GREEN, 71, 40,"T2:");
       printm(GREEN, 72, 40,"T3:");

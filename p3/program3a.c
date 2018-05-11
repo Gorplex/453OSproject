@@ -39,6 +39,7 @@ void printThreadsMain(uint16_t * sys){
       printSys( (system_t *) sys);
       mutex_unlock(screem);
       getKeys();
+      yield();
    }
 }
 
