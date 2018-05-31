@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "os.h"
-#include "globals.h"
+//#include "globals.h"
 
 void start_system_timer() {
    TIMSK0 |= _BV(OCIE0A);  /* IRQ on compare.  */

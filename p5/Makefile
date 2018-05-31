@@ -1,5 +1,5 @@
-HEADERS = os.h synchro.h printThreads.h serial.h
-CFILES  = os.c synchro.c printThreads.c serial.c
+HEADERS = os.h synchro.h printThreads.h serial.h WavePinDefs.h SdInfo.h SdReader.h
+CFILES  = os.c synchro.c printThreads.c serial.c SdReader.c
 
 #Change this variable to point to your Arduino device
 #Mac - it may be different
@@ -17,16 +17,12 @@ WIN = COM10
 LNX = /dev/ttyACM0 
 
 #default target to compile the code
-default: p3a
+default: program5 program
 
-p3a: program3a program
-p3b: program3b program
-a: p3a
-b: p3b
+
 
 #FOR SENG SPEC
-program_3a: program3a
-program_3b: program3b
+program_5: program5
 
 %: %.c $(HEADERS) $(CFILES)
 	avr-gcc -g -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^

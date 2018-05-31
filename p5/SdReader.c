@@ -1,6 +1,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
-#include "globals.h"
+//#include "globals.h"
 #include "SdReader.h"
 #include "WavePinDefs.h"
 

@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "globals.h"
+//#include "globals.h"
+#include "serial.h"
 #include "os.h"
 #include <util/delay.h>
 #include <stdlib.h>

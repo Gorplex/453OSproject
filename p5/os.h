@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
+#include <avr/io.h>     //ADDED FOR PROJECT 5
 #include <string.h>
 
 #define MAX_THREADS 8  //max threads
@@ -19,7 +20,11 @@
 #define THREAD_WAITING     3  //waiting on mutex or semaphore
 #define THREAD_ENDED       4  //run off end of function
 
-#define MS_PER_TICK 10        //10 ms between each thread swap
+//PROJECT 5 mtime is us and time is in ms
+#define MS_PER_TICK 45          //10 us between each thread swap 
+//#define MS_PER_TICK 10        //10 ms between each thread swap
+
+
 
 //This structure defines the register order pushed to the stack on a
 //system context switch.
@@ -112,6 +117,7 @@ uint8_t get_next_thread(void);
 void thread_start(void);
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp);
 void start_system_timer();
+void start_audio_pwm();
 
 //project 3
 void thread_sleep(uint16_t ticks);
