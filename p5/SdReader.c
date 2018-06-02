@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 //#include "globals.h"
+#include "serial.h"
 #include "SdReader.h"
 #include "WavePinDefs.h"
 
@@ -22,7 +23,8 @@ inline uint8_t spiRec(void) {spiSend(0XFF); return SPDR;}
 /** Set Slave Select high */
 inline void spiSSHigh(void) {
    //digitalWrite(SS, HIGH);
-   sbi(PORTB, SS);
+   //sbi(PORTB, SS);
+   PORTB |= (1 << SS);
 
    // insure SD data out is high Z
    spiSend(0XFF);
@@ -30,7 +32,8 @@ inline void spiSSHigh(void) {
 /** Set Slave Select low */
 inline void spiSSLow(void) {
    //digitalWrite(SS, LOW);
-   cbi(PORTB, SS);
+   //cbi(PORTB, SS);
+   PORTB &= ~(1 << SS);
 }
 
 //------------------------------------------------------------------------------
