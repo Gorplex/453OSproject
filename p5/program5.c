@@ -8,6 +8,7 @@
 #include "ext2.h"
 #include "SdReader.h"
 #include "printThreads.h"
+#include "ext2Reader.h"
 
 #define BUF_SIZE 256
 
@@ -15,7 +16,7 @@
 typedef struct music_t {
    uint16_t playI;
    uint16_t readI;
-   uint8_t buf1[BUF_SIZE];
+   uint8_t buf[BUF_SIZE];
    uint8_t buf2[BUF_SIZE];
 } music_t;
 
@@ -37,14 +38,23 @@ void idle(uint16_t *args){
    }
 }
 
+//check
 void playbackMain(music_t *music){
    while(1){
-      
+      if(music->readI > music->playI){
+         OCR2B = music->buf[music->playI++];
+         if(music->playI >= 512){
+            music->playI = 0;
+         }
+      }
+      thread_sleep(1);   //sleep for 45us (1s/22000)
    }
 }
 
 void readMain(){
+   
    sdInit(0);
+   
    while(1){
       if(1){
 

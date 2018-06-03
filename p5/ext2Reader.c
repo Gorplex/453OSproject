@@ -21,6 +21,8 @@ uint32_t blocks_per_group;
 uint32_t inodes_per_group;
 uint32_t inode_table;
 
+
+
 void read_block(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size) {
     sdReadData(block*2+offset/512, offset%512, data, MIN(512-(offset%512), size));   
     if(size>=512){
@@ -36,6 +38,12 @@ void read_super(){
     inodes_per_group = su_blk.s_inodes_per_group;
 }
 
+void read_bgdt(){
+    struct ext2_group_desc bgdt;
+    read_block(2,0, (void *) &bgdt, sizeof(struct ext2_group_desc));
+    inode_table = bgdt.bg_inode_table;
+}
+
 void read_inode(uint32_t inodeNum, struct ext2_inode *inode){
     uint32_t BGNum;
     uint32_t index;
@@ -49,58 +57,65 @@ void read_inode(uint32_t inodeNum, struct ext2_inode *inode){
         (void *)inode, EXT2_GOOD_OLD_INODE_SIZE);
 }
 
-void format_inode(uint32_t inodeNum, uint16_t len, char *name, char **output){
-    struct ext2_inode inode;
-    
-    read_inode(inodeNum, &inode);
-    if(inode.i_mode & EXT2_S_IFREG){
-        asprintf(output, "%-20.*s\t%-10d\tF\n", len, name, inode.i_size);
-    }else{
-        asprintf(output, "%-20.*s\t0\t\tD\n", len, name);
-    }
+uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char *name){
+   struct ext2_inode inode;
+   struct ext2_dir_entry *dirEnt;
+   uint8_t buffer[BLOCK_SIZE];
+
+   read_block(block, 0, (void *)buffer, block_size); 
+   
+   while((((void *)dirEnt) - ((void *)buffer)) < block_size && dirEnt->rec_len){
+      if(*curIndex == *index){
+         read_inode(dirEnt->inode, &inode);
+         if(inode.i_mode & EXT2_S_IFREG){
+            memcpy(name, dirEnt->name, dirEnt->name_len)
+            name[dirEnt->name_len] = '\0';
+            return dirEnt->inode;
+         }
+         *index = *index+1;
+      }
+      *curIndex = *curIndex+1;
+      dirEnt = (struct ext2_dir_entry *) (dirEnt->rec_len + ((void *)dirEnt));
+   }
+   return 0;
 }
 
-void read_dir_block(uint32_t block, uint8_t * numLines, char *lines[]){
-    struct ext2_dir_entry *dirEnt;
-    //struct ext2_dir_entry *l;
-    uint8_t buffer[BLOCK_SIZE];
-    uint16_t num;
+uint32_t readRoot(uint16_t *index, char *name){
+   struct ext2_inode inode;
+   uint16_t curIndex;
+   uint16_t blockNum;
+   uint32_t inodeNum;
 
-    //printf("TEST: %d\n", buffer[1000]);
-    read_block(block, 0, (void *)buffer, block_size); 
-    //printf("TEST: %d\n", buffer[1000]);
-    //printf("TEST: %.*s\n",9, buffer+340-12);
-    
-    dirEnt=(void *)buffer;
-    //printf("LEN2: %d\n", dirEnt->rec_len);
-    while((((void *)dirEnt) - ((void *)buffer)) < block_size && dirEnt->rec_len){
-        //printf("NumLines: %d\n", *numLines);
-        //printf("TEST: %.*s\n",9, buffer+340-12);
-        format_inode(dirEnt->inode, dirEnt->name_len, 
-            dirEnt->name, &lines[(*numLines)++]);
-        //printf("TEST: %.*s\n",9, buffer+340-12);
-        //printf("LEN: %d\n", dirEnt->rec_len);
-        //printf("LENN: %d\n", dirEnt->name_len);
-        //l=dirEnt;
-        //printf("inode %.*s: %d\n", dirEnt->name_len, dirEnt->name, dirEnt->inode);
-        dirEnt = (struct ext2_dir_entry *) (dirEnt->rec_len + ((void *)dirEnt));
-        //printf("DIF: %d\n", ((void *)dirEnt)-((void *)buffer));
-        //printf("PTR: %p\n\n", dirEnt);
-        //printf("buf: %p\n\n", buffer);
-        //printf("\n");
-    }
+   read_super();
+   read_bgdt();
+   read_inode(EXT2_ROOT_INO, &inode);
+   
+   while(blockNum*block_size < inode->i_size){
+      if(inode = readDirBlock(inode->i_block[blockNum], &curIndex, index, name)){
+         return inodeNum;      
+      }
+      blockNum++;
+   }
+
+   return 0;
 }
 
-int string_cmp(const void *a, const void *b){
-    return strcmp(*((const char **)a),*((const char **)b));
+void readFile(uint32_t inodeNum, uint32_t bufNum, uint8_t *buf){
+   struct ext2_inode inode;
+   uint32_t links[256];
+   uint16_t i;
+
+   read_inode(inodeNum, &inode);
+   
+   if(bufNum/4 < 12){
+      read_block(inode.i_block[bufNum/4], (bufNum%4)*256, MIN(block_size, inode.i_size-bufNum*256), buf);
+   }else if(bufNum/4 >= 12){
+      copyBlock(links[bufNum/4-12], (bufNum%4)*256, MIN(block_size, inode.i_size-bufNum*256), buf);
+   }
+   //NO DOUBLE LINKS
 }
 
-void print_block(uint32_t block, uint16_t len){
-    uint8_t buf[BLOCK_SIZE];
-    read_block(block, 0, (void *)buf, len);
-    fwrite(buf, 1, len, stdout);
-}
-
+/*OLD
 void print_file(struct ext2_inode *inode){
     uint32_t buf[256];
     uint32_t bufofbuf[256];
@@ -126,46 +141,6 @@ void print_file(struct ext2_inode *inode){
             size -= MIN(block_size, size);
         }
     }
-}
-
-void print_dir(struct ext2_inode *inode){
-    char * lines[MAX_FILES];
-    uint8_t numLines;
-    uint32_t blockNum;
-    uint16_t i;
-
-    numLines = 0;
-    blockNum=0;
-    while(blockNum*block_size < inode->i_size){
-        read_dir_block(inode->i_block[blockNum], &numLines, lines);
-        blockNum++;
-    }
-    qsort(lines, numLines, sizeof(char *), string_cmp);
-    printf("name\t\t\tsize\t\ttype\n");
-    for(i=0;i<numLines;i++){
-        printf(lines[i]);
-        free(lines[i]);
-    }
-}
-
-void print_inode(uint32_t inodeNum){
-    struct ext2_inode inode;
-   
-    read_inode(inodeNum, &inode);
-    if(inode.i_mode & EXT2_S_IFREG){
-        //fprintf(stderr, "ext2reader: Not a directory\n");
-        //fclose(fp);
-        //exit(EXIT_FAILURE);
-        print_file(&inode);
-    }else{
-        print_dir(&inode);    
-    }
-}
-
-void read_bgdt(){
-    struct ext2_group_desc bgdt;
-    read_block(2,0, (void *) &bgdt, sizeof(struct ext2_group_desc));
-    inode_table = bgdt.bg_inode_table;
 }
 
 uint32_t check_dir_block(uint32_t block, char * dirName){
@@ -213,31 +188,5 @@ void follow_path(uint32_t inodeNum, char *dirName){
         fclose(fp);
         exit(EXIT_FAILURE);
     }
-}
-/*
-void main(int argc, char **argv){
-    char *dirName;
-
-    checkArgs(argc, argv);
-    read_super();
-    read_bgdt();
-
-    if(argc == 2){
-        print_inode(EXT2_ROOT_INO); 
-    }else if(argc == 3){
-        
-        dirName = strtok(argv[2], "/");
-        if(dirName){
-            follow_path(EXT2_ROOT_INO, dirName);
-        }else{
-            print_inode(EXT2_ROOT_INO); 
-        }
-    }else{
-        dirName = strtok(argv[3], "/");
-        if(dirName){
-            follow_path(EXT2_ROOT_INO, dirName);        
-        }
-    }
-    fclose(fp);
 }
 */
