@@ -41,7 +41,7 @@ void read_inode(uint32_t inodeNum, struct ext2_inode *inode){
         (void *)inode, EXT2_GOOD_OLD_INODE_SIZE);
 }
 
-uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char *name){
+uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char *name, uint32_t *len){
    struct ext2_inode inode;
    struct ext2_dir_entry *dirEnt;
    uint8_t buffer[BLOCK_SIZE];
@@ -52,6 +52,7 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
       if(*curIndex == *index){
          read_inode(dirEnt->inode, &inode);
          if(inode.i_mode & EXT2_S_IFREG){
+            *len = inode.i_size;
             memcpy(name, dirEnt->name, dirEnt->name_len);
             name[dirEnt->name_len] = '\0';
             return dirEnt->inode;
@@ -64,7 +65,7 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
    return 0;
 }
 
-uint32_t readRoot(uint16_t *index, char *name){
+uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
    struct ext2_inode inode;
    uint16_t curIndex;
    uint16_t blockNum;
@@ -75,7 +76,7 @@ uint32_t readRoot(uint16_t *index, char *name){
    read_inode(EXT2_ROOT_INO, &inode);
    
    while(blockNum*block_size < inode.i_size){
-      if(inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name)){
+      if(inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name, len)){
          return inodeNum;      
       }
       blockNum++;

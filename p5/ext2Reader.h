@@ -18,7 +18,7 @@
 #define MAX(a,b) a>b?a:b
 
 
-uint32_t readRoot(uint16_t *index, char *name);
+uint32_t readRoot(uint16_t *index, char *name, uint32_t *len);
 void readFile(uint32_t inodeNum, uint32_t bufNum, uint8_t *buf);
 
 #endif

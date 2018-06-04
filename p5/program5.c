@@ -19,6 +19,8 @@ typedef struct music_t {
    uint16_t playI;
    uint16_t readI;
    uint16_t songNum;
+   uint32_t size;
+   uint16_t bufNum;
    uint8_t buf[BUF_SIZE];
    uint8_t buf2[BUF_SIZE];
    uint8_t name[NAME_LEN];
@@ -28,6 +30,8 @@ void initMusic(music_t *m){
    m->playI=0;
    m->readI=0;
    m->songNum = 0;
+   m->bufNum = 0;
+   m->size = 0;
    //bug may not skip back over dirs properly
 }
 
@@ -61,41 +65,47 @@ void readMain(music_t *music){
    uint16_t fileIndex;
    uint16_t lastSongNum;
    uint32_t inodeNum;
-   uint16_t bufNum;
-   char fileName[NAME_LEN];
-
 
    sdInit(0);
    fileIndex = 0;
-   bufNum = 0;
    lastSongNum = music->songNum; 
-
-
-   //just the first read
-   inodeNum = readRoot(&fileIndex, music->name);
-   readFile(inodeNum, bufNum, music->buf); 
-   music->readI=BUF_SIZE;
-
-
+   
    while(1){
-      if(music->songNum != lastSongNum){
-         if(music->songNum > lastSongNum){
-            fileIndex++;
-         }else{
-            fileIndex--;   //may be a problem
+      //first read
+      inodeNum = readRoot(&fileIndex, music->name, &music->size);
+      readFile(inodeNum, music->bufNum, music->buf); 
+      music->bufNum++;
+      music->readI=BUF_SIZE;
+
+      while(1){
+         //end of song load next
+         if(music->bufNum == 0){
+            lastSongNum++;
+            music->songNum++;
+            break;
          }
-         inodeNum = readRoot(&fileIndex, music->name);
-         readFile(inodeNum, bufNum, music->buf); 
-         music->readI=BUF_SIZE;
-         lastSongNum = music->songNum;         
+         
+         if(music->songNum != lastSongNum){
+            if(music->songNum > lastSongNum){
+               fileIndex++;
+            }else{ //if(music->songNum < lastSongNum){
+               fileIndex--;   //may be a problem
+            }
+            lastSongNum = music->songNum;         
+            break;
+         }
+         //if queue needs to be filled
+         if(music->readI/BUF_SIZE ^ music->readI/BUF_SIZE){
+            readFile(inodeNum, music->bufNum, music->buf); 
+            music->bufNum++;
+            music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
+         }
+         yield();
       }
-      //if queue needs to be filled
-      if(music->readI/BUF_SIZE ^ music->readI/BUF_SIZE){
-         readFile(inodeNum, bufNum, music->buf); 
-         bufNum++;
-         music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
+      //wait for player to be in second buffer
+      while(!(music->playI/BUF_SIZE)){
+         yield();
       }
-      yield();
    }
 }
 
