@@ -1,5 +1,5 @@
-HEADERS = os.h synchro.h printThreads.h serial.h WavePinDefs.h SdInfo.h SdReader.h
-CFILES  = os.c synchro.c printThreads.c serial.c SdReader.c
+HEADERS = os.h synchro.h printThreads.h serial.h WavePinDefs.h SdInfo.h SdReader.h ext2Reader.h
+CFILES  = os.c synchro.c printThreads.c serial.c SdReader.c ext2Reader.c
 
 #Change this variable to point to your Arduino device
 #Mac - it may be different

@@ -1,18 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <string.h> 
-
-#include "ext2.h"
-#include "SdReader.h"
-
-#define BLOCK_SIZE 1024
-#define EXT2_BGDT 2
-#define MAX_FILES 256
-
-#define MIN(a,b) a<b?a:b
-#define MAX(a,b) a>b?a:b
+#include "ext2Reader.h"
 
 static FILE *fp = 0;
 
@@ -20,8 +6,6 @@ uint32_t block_size;
 uint32_t blocks_per_group;
 uint32_t inodes_per_group;
 uint32_t inode_table;
-
-
 
 void read_block(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size) {
     sdReadData(block*2+offset/512, offset%512, data, MIN(512-(offset%512), size));   
@@ -68,7 +52,7 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
       if(*curIndex == *index){
          read_inode(dirEnt->inode, &inode);
          if(inode.i_mode & EXT2_S_IFREG){
-            memcpy(name, dirEnt->name, dirEnt->name_len)
+            memcpy(name, dirEnt->name, dirEnt->name_len);
             name[dirEnt->name_len] = '\0';
             return dirEnt->inode;
          }
@@ -90,27 +74,28 @@ uint32_t readRoot(uint16_t *index, char *name){
    read_bgdt();
    read_inode(EXT2_ROOT_INO, &inode);
    
-   while(blockNum*block_size < inode->i_size){
-      if(inode = readDirBlock(inode->i_block[blockNum], &curIndex, index, name)){
+   while(blockNum*block_size < inode.i_size){
+      if(inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name)){
          return inodeNum;      
       }
       blockNum++;
    }
 
-   return 0;
+   return inodeNum;
 }
 
 void readFile(uint32_t inodeNum, uint32_t bufNum, uint8_t *buf){
    struct ext2_inode inode;
-   uint32_t links[256];
+   uint8_t links[256];
    uint16_t i;
 
    read_inode(inodeNum, &inode);
    
    if(bufNum/4 < 12){
-      read_block(inode.i_block[bufNum/4], (bufNum%4)*256, MIN(block_size, inode.i_size-bufNum*256), buf);
+      read_block(inode.i_block[bufNum/4], (bufNum%4)*READ_BUF_SIZE, ((void *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
    }else if(bufNum/4 >= 12){
-      copyBlock(links[bufNum/4-12], (bufNum%4)*256, MIN(block_size, inode.i_size-bufNum*256), buf);
+      read_block(inode.i_block[12], 0, links, block_size);
+      read_block(links[bufNum/4-12], (bufNum%4)*READ_BUF_SIZE, ((void *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
    }
    //NO DOUBLE LINKS
 }
