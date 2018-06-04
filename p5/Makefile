@@ -31,7 +31,10 @@ program_5: program5
 
 #flash the Arduino with the program
 program: main.hex
-	if [ "$$(uname)" = "MSYS_NT-10.0" ]; then avrdude -D -pm2560 -P $(WIN) -c wiring -F -u -U flash:w:main.hex; else avrdude -D -pm2560 -P $(LNX) -c wiring -F -u -U flash:w:main.hex;fi
+	if [ "$$(uname)" = "MSYS_NT-10.0" ]; \
+		then avrdude -D -pm2560 -P $(WIN) -c wiring -F -u -U flash:w:main.hex; \
+		else avrdude -D -pm2560 -P $(LNX) -c wiring -F -u -U flash:w:main.hex; \
+	fi;
 #	avrdude -D -pm2560 -P $(DEVICE) -c wiring -F -u -U flash:w:main.hex
 
 #remove build files

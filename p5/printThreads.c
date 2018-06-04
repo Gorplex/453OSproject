@@ -14,8 +14,8 @@ void printm(uint8_t color, uint8_t row, uint8_t col, char * str){
 void printThread(thread_t thread) {
    set_color(RED);
    print_string("\tName:\t"); set_color(BR_RED);     print_string(thread.name);
-   set_color(GREEN);
-   print_string("\r\n\tThread PC:\t");   set_color(BR_GREEN);   print_hex(thread.pc);
+   /* set_color(GREEN); */
+   /* print_string("\r\n\tThread PC:\t");   set_color(BR_GREEN);   print_hex(thread.pc); */
    set_color(YELLOW);
    print_string("\r\n\tStack Usage:\t"); set_color(BR_YELLOW);  print_int(thread.stackEnd-thread.stackPtr);
    set_color(BLUE);
