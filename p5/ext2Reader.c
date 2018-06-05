@@ -1,5 +1,8 @@
 #include "ext2Reader.h"
 
+
+
+
 static FILE *fp = 0;
 
 uint32_t block_size;
@@ -47,7 +50,8 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
    uint8_t buffer[BLOCK_SIZE];
 
    read_block(block, 0, (void *)buffer, block_size); 
-   
+
+   sprintf(name, "a: %i, < b: %i, && %i", (((void *)dirEnt) - ((void *)buffer)), block_size, dirEnt->rec_len);
    while((((void *)dirEnt) - ((void *)buffer)) < block_size && dirEnt->rec_len){
       if(*curIndex == *index){
          read_inode(dirEnt->inode, &inode);
@@ -81,6 +85,7 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
       }
       blockNum++;
    }
+
 
    return inodeNum;
 }

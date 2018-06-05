@@ -14,9 +14,13 @@
 #define NAME_LEN 256
 
 
+/* music display stuff */
 #define BAR_LEN 50
-
+#define MUSIC_X 30
+#define MUSIC_Y 37
 system_t *sys;
+
+char debug[512];
 
 typedef struct music_t {
    uint16_t playI;
@@ -30,18 +34,71 @@ typedef struct music_t {
 } music_t;
 
 void initMusic(music_t *m){
-   m->playI=0;
-   m->readI=0;
-   m->songNum = 0;
-   m->bufNum = 0;
-   m->size = 0;
+
+   memset(m, 0, sizeof( music_t));
+   
+   /* m->playI=0; */
+   /* m->readI=0; */
+   /* m->songNum = 0; */
+   /* m->bufNum = 0; */
+   /* m->size = 0; */
    //bug may not skip back over dirs properly
 }
+
+void printMusic(music_t * m) {
+   char bar[50];      
+
+   set_cursor(MUSIC_Y,MUSIC_X);
+   set_color(GREEN);
+   print_string("Title:\t"); 
+   print_string( m->name);
+
+   set_cursor(MUSIC_Y+1,MUSIC_X);
+   set_color(GREEN);
+   print_string("Song Time:\t"); 
+   print_int( m->bufNum / 86 /* 85.9375 */);
+
+   set_cursor(MUSIC_Y+2,MUSIC_X);
+   set_color(YELLOW);
+   print_string("Song Time:\t"); 
+   print_int( m->bufNum / 86 /* 85.9375 */);
+
+   set_cursor(MUSIC_Y+3,MUSIC_X);
+   set_color(GREEN);
+   print_string("Song Length:\t"); 
+   print_int( m->size / 22000);
+
+   set_cursor(MUSIC_Y+4,MUSIC_X);
+   set_color(GREEN);
+   print_string("Song Num:\t"); 
+   print_int( m->songNum);
+
+   set_cursor(MUSIC_Y+5,MUSIC_X );
+   set_color(GREEN);
+   int i;
+   write_byte('[');
+   for(i=0; i < BAR_LEN * (m->bufNum / 86 /* 85.9375 */) / m->size/22000; i++) {
+      write_byte('#'); /* '█'); */
+   }
+   set_color(YELLOW);
+   while(i++ < 50) {
+      write_byte('_');
+   }
+   write_byte(']');
+
+   
+}
+
 
 void printThreadsMain(music_t *music){
    while(1){
       printSys((system_t *) sys);
       printMusic(music);
+      
+      set_cursor(MUSIC_Y+7,0 );
+      print_string("DEBUG: <");
+      print_string(debug);
+      print_string(">");
       yield();
    }
 }
@@ -75,6 +132,7 @@ void readMain(music_t *music){
    
    while(1){
       //first read
+      strcpy(music->name, "no title");
       inodeNum = readRoot(&fileIndex, music->name, &music->size);
       readFile(inodeNum, music->bufNum, music->buf); 
       music->bufNum++;
@@ -140,43 +198,3 @@ void main() {
 
 
 
-void printMusic(music_t * m) {
-   char bar[50];
-
-   set_cursor(48,10);
-   set_color(GREEN);
-   int i;
-   write_byte('[');
-   for(i=0; i < BAR_LEN * (m->bufNum / 86 /* 85.9375 */) / m->size/22000; i++) {
-      write_byte('#'); /* '█'); */
-   }
-   set_color(YELLOW);
-   while(i++ < 50) {
-      write_byte('_');
-   }
-   write_byte(']');
-      
-
-   set_cursor(44,40);
-   set_color(GREEN);
-   print_string("Song Time:\t"); 
-   print_int( m->bufNum / 86 /* 85.9375 */);
-
-   
-   
-   set_cursor(45,40);
-   set_color(YELLOW);
-   print_string("Song Time:\t"); 
-   print_int( m->bufNum / 86 /* 85.9375 */);
-
-   set_cursor(46,40);
-   set_color(GREEN);
-   print_string("Song Length:\t"); 
-   print_int( m->size / 22000);
-
-   set_cursor(47,40);
-   set_color(GREEN);
-   print_string("Song Num:\t"); 
-   print_int( m->songNum);
-
-}

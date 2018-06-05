@@ -21,11 +21,11 @@ void printThread(thread_t thread) {
    set_color(BLUE);
    print_string("\r\n\tStack Size:\t");  set_color(BR_BLUE);    print_int(thread.stackEnd-thread.stackBase);
    set_color(MAGENTA);
-   print_string("\r\n\tCur StackPtr:\t"); set_color(BR_BLUE);  set_color(BR_MAGENTA); print_hex(thread.stackPtr);
-   set_color(CYAN);
-   print_string("\r\n\tStack Base:\t");  set_color(BR_CYAN);    print_hex(thread.stackBase);
-   set_color(WHITE);
-   print_string("\tStack End: ");   set_color(BR_WHITE);   print_hex(thread.stackEnd);
+   /* print_string("\r\n\tCur StackPtr:\t"); set_color(BR_BLUE);  set_color(BR_MAGENTA); print_hex(thread.stackPtr); */
+   /* set_color(CYAN); */
+   /* print_string("\r\n\tStack Base:\t");  set_color(BR_CYAN);    print_hex(thread.stackBase); */
+   /* set_color(WHITE); */
+   /* print_string("\tStack End: ");   set_color(BR_WHITE);   print_hex(thread.stackEnd); */
    set_color(RED);
    print_string("\r\n\tThread Status:\t");   set_color(BR_RED);   
    //extra spacing to overwrite longer words
