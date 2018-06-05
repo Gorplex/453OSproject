@@ -41,6 +41,7 @@ void initMusic(music_t *m){
 void printThreadsMain(music_t *music){
    while(1){
       printSys((system_t *) sys);
+      printMusic(music);
       yield();
    }
 }
@@ -130,7 +131,7 @@ void main() {
    sys = os_init_noMain();
    
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
-   create_thread("reader", (uint16_t) &readMain, &music, 1000);
+   create_thread("reader", (uint16_t) &readMain, &music, 2500);
    create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
 
@@ -142,39 +143,40 @@ void main() {
 void printMusic(music_t * m) {
    char bar[50];
 
-   set_cursor(33,30);
+   set_cursor(48,10);
    set_color(GREEN);
    int i;
+   write_byte('[');
    for(i=0; i < BAR_LEN * (m->bufNum / 86 /* 85.9375 */) / m->size/22000; i++) {
-      write_byte(219); /* '█'); */
+      write_byte('#'); /* '█'); */
    }
    set_color(YELLOW);
-   while(i < 50) {
+   while(i++ < 50) {
       write_byte('_');
    }
-
+   write_byte(']');
       
 
-   set_cursor(30,50);
+   set_cursor(44,40);
    set_color(GREEN);
-   print_string("\r\n\tSong Time:\t"); 
+   print_string("Song Time:\t"); 
    print_int( m->bufNum / 86 /* 85.9375 */);
 
    
    
-   set_cursor(30,50);
+   set_cursor(45,40);
    set_color(YELLOW);
-   print_string("\r\n\tSong Time:\t"); 
+   print_string("Song Time:\t"); 
    print_int( m->bufNum / 86 /* 85.9375 */);
 
-   set_cursor(31,50);
+   set_cursor(46,40);
    set_color(GREEN);
-   print_string("\r\n\tSong Length:\t"); 
+   print_string("Song Length:\t"); 
    print_int( m->size / 22000);
 
-   set_cursor(32,50);
+   set_cursor(47,40);
    set_color(GREEN);
-   print_string("\r\n\tSong Num:\t"); 
+   print_string("Song Num:\t"); 
    print_int( m->songNum);
 
 }
