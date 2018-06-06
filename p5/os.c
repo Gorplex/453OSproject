@@ -103,10 +103,25 @@ void check_sleeping_threads(){
 
 //if no valid thread to swap to returns same thread
 //because it is called while interrupts are disabled
+/*
 uint8_t get_next_thread(){
    uint8_t next;
    check_sleeping_threads();
    next = (sys->curThread+1)%sys->threadCount;
+   while(sys->threads[next].thread_status != THREAD_READY
+      && sys->threads[next].thread_status != THREAD_RUNNING){
+      next = (next+1)%sys->threadCount;
+      if(next == sys->curThread){
+         break;
+      }
+   }
+   return next;
+}*/
+//Project 5 PRIORITY
+uint8_t get_next_thread(){
+   uint8_t next;
+   check_sleeping_threads();
+   next = 0;   //next always starts at thread 0, priority queue
    while(sys->threads[next].thread_status != THREAD_READY
       && sys->threads[next].thread_status != THREAD_RUNNING){
       next = (next+1)%sys->threadCount;

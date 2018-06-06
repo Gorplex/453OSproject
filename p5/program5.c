@@ -38,6 +38,47 @@ void initMusic(music_t *m){
    //bug may not skip back over dirs properly
 }
 
+void printMusic(music_t * m) {
+   char bar[50];
+
+   set_cursor(48,10);
+   set_color(GREEN);
+   int i;
+   write_byte('[');
+   for(i=0; i < BAR_LEN * (m->bufNum / 86 /* 85.9375 */) / m->size/22000; i++) {
+      write_byte('#'); /* '█'); */
+   }
+   set_color(YELLOW);
+   while(i++ < 50) {
+      write_byte('_');
+   }
+   write_byte(']');
+      
+
+   set_cursor(44,40);
+   set_color(GREEN);
+   print_string("Song Time:\t"); 
+   print_int( m->bufNum / 86 /* 85.9375 */);
+
+   
+   
+   set_cursor(45,40);
+   set_color(YELLOW);
+   print_string("Song Time:\t"); 
+   print_int( m->bufNum / 86 /* 85.9375 */);
+
+   set_cursor(46,40);
+   set_color(GREEN);
+   print_string("Song Length:\t"); 
+   print_int( m->size / 22000);
+
+   set_cursor(47,40);
+   set_color(GREEN);
+   print_string("Song Num:\t"); 
+   print_int( m->songNum);
+
+}
+
 void printThreadsMain(music_t *music){
    while(1){
       printSys((system_t *) sys);
@@ -87,18 +128,18 @@ void readMain(music_t *music){
             break;
          }
 
-	 if(byte_available()) {
-	    uint8_t c = read_byte();
-	    if(c == 'p') {
-	       fileIndex--;
-	       music->songNum--;
-	       break;
-	    } else if( c == 'n') {
-	       fileIndex++;
-	       music->songNum++;
-	       break;
-	    }
-	 }
+	      if(byte_available()) {
+            uint8_t c = read_byte();
+            if(c == 'p') {
+               fileIndex--;
+               music->songNum--;
+               break;
+            }else if( c == 'n') {
+               fileIndex++;
+	            music->songNum++;
+	            break;
+	         }
+	      }  
 	    
 	 	 
          //if queue needs to be filled
@@ -132,7 +173,7 @@ void main() {
    
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
    create_thread("reader", (uint16_t) &readMain, &music, 2500);
-   create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
+   //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
 
    os_start();
@@ -140,43 +181,4 @@ void main() {
 
 
 
-void printMusic(music_t * m) {
-   char bar[50];
 
-   set_cursor(48,10);
-   set_color(GREEN);
-   int i;
-   write_byte('[');
-   for(i=0; i < BAR_LEN * (m->bufNum / 86 /* 85.9375 */) / m->size/22000; i++) {
-      write_byte('#'); /* '█'); */
-   }
-   set_color(YELLOW);
-   while(i++ < 50) {
-      write_byte('_');
-   }
-   write_byte(']');
-      
-
-   set_cursor(44,40);
-   set_color(GREEN);
-   print_string("Song Time:\t"); 
-   print_int( m->bufNum / 86 /* 85.9375 */);
-
-   
-   
-   set_cursor(45,40);
-   set_color(YELLOW);
-   print_string("Song Time:\t"); 
-   print_int( m->bufNum / 86 /* 85.9375 */);
-
-   set_cursor(46,40);
-   set_color(GREEN);
-   print_string("Song Length:\t"); 
-   print_int( m->size / 22000);
-
-   set_cursor(47,40);
-   set_color(GREEN);
-   print_string("Song Num:\t"); 
-   print_int( m->songNum);
-
-}
