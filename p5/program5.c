@@ -46,6 +46,7 @@ void initMusic(music_t *m){
 }
 
 void printMusic(music_t * m) {
+<<<<<<< HEAD
    char bar[50];      
 
    set_cursor(MUSIC_Y,MUSIC_X);
@@ -54,25 +55,59 @@ void printMusic(music_t * m) {
    print_string( m->name);
 
    set_cursor(MUSIC_Y+1,MUSIC_X);
+=======
+   char bar[50];
+
+   set_cursor(48,10);
+   set_color(GREEN);
+   int i;
+   write_byte('[');
+   for(i=0; i < BAR_LEN * (m->bufNum / 86 /* 85.9375 */) / m->size/22000; i++) {
+      write_byte('#'); /* '█'); */
+   }
+   set_color(YELLOW);
+   while(i++ < 50) {
+      write_byte('_');
+   }
+   write_byte(']');
+      
+
+   set_cursor(44,40);
+>>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01
    set_color(GREEN);
    print_string("Song Time:\t"); 
    print_int( m->bufNum / 86 /* 85.9375 */);
 
+<<<<<<< HEAD
    set_cursor(MUSIC_Y+2,MUSIC_X);
+=======
+   
+   
+   set_cursor(45,40);
+>>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01
    set_color(YELLOW);
    print_string("Song Time:\t"); 
    print_int( m->bufNum / 86 /* 85.9375 */);
 
+<<<<<<< HEAD
    set_cursor(MUSIC_Y+3,MUSIC_X);
+=======
+   set_cursor(46,40);
+>>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01
    set_color(GREEN);
    print_string("Song Length:\t"); 
    print_int( m->size / 22000);
 
+<<<<<<< HEAD
    set_cursor(MUSIC_Y+4,MUSIC_X);
+=======
+   set_cursor(47,40);
+>>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01
    set_color(GREEN);
    print_string("Song Num:\t"); 
    print_int( m->songNum);
 
+<<<<<<< HEAD
    set_cursor(MUSIC_Y+5,MUSIC_X );
    set_color(GREEN);
    int i;
@@ -90,6 +125,10 @@ void printMusic(music_t * m) {
 }
 
 
+=======
+}
+
+>>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01
 void printThreadsMain(music_t *music){
    while(1){
       printSys((system_t *) sys);
@@ -145,18 +184,18 @@ void readMain(music_t *music){
             break;
          }
 
-	 if(byte_available()) {
-	    uint8_t c = read_byte();
-	    if(c == 'p') {
-	       fileIndex--;
-	       music->songNum--;
-	       break;
-	    } else if( c == 'n') {
-	       fileIndex++;
-	       music->songNum++;
-	       break;
-	    }
-	 }
+	      if(byte_available()) {
+            uint8_t c = read_byte();
+            if(c == 'p') {
+               fileIndex--;
+               music->songNum--;
+               break;
+            }else if( c == 'n') {
+               fileIndex++;
+	            music->songNum++;
+	            break;
+	         }
+	      }  
 	    
 	 	 
          //if queue needs to be filled
@@ -178,19 +217,22 @@ void main() {
    uint8_t sd_card_status;
    music_t music;
 
-   sd_card_status = sdInit(1);   //initialize the card with slow clock
-
-   initMusic(&music);
-
    serial_init(); 
    clear_screen();
+   
+   set_cursor(0,0);
+   while(!(sd_card_status = sdInit(1))){   //1 for slow, o for fast
+      print_string("SD CARD IS BROKEN\r\n");
+   }
+   
+   initMusic(&music);
 
    start_audio_pwm();
    sys = os_init_noMain();
    
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
    create_thread("reader", (uint16_t) &readMain, &music, 2500);
-   create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
+   //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
 
    os_start();
@@ -198,3 +240,7 @@ void main() {
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01

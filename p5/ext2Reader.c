@@ -1,7 +1,11 @@
 #include "ext2Reader.h"
 
+<<<<<<< HEAD
 
 
+=======
+#include "serial.h"
+>>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01
 
 static FILE *fp = 0;
 
@@ -10,25 +14,61 @@ uint32_t blocks_per_group;
 uint32_t inodes_per_group;
 uint32_t inode_table;
 
+/*
+over complex
 void read_block(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size) {
     sdReadData(block*2+offset/512, offset%512, data, MIN(512-(offset%512), size));   
-    if(size>=512){
+    if(size+offset>=512 && offset < 512){
         sdReadData(block*2+1, offset%512, data+512-offset, size-512-offset);
     }
+}*/
+
+void read_block(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size) {
+   if(offset < 512){
+      //read first 1/2
+      sdReadData(block*2, offset, data, MIN(size, 512-offset));
+      //if size > ammount read
+      if(size > 512-offset){
+         sdReadData(block*2+1, 0, data+(512-offset), size-(512-offset));
+      }
+   }else{
+      sdReadData(block*2+1, offset%512, data, MIN(size, 512));
+   }
 }
 
 void read_super(){
-    struct ext2_super_block su_blk;
-    read_block(1, 0, (uint8_t *)&su_blk, sizeof(struct ext2_super_block));
-    block_size = 1024 << su_blk.s_log_block_size;
-    blocks_per_group = su_blk.s_blocks_per_group;
-    inodes_per_group = su_blk.s_inodes_per_group;
+   struct ext2_super_block su_blk;
+   memset(&su_blk, 0, sizeof(struct ext2_super_block));
+
+   read_block(1, 0, (uint8_t *)&su_blk, sizeof(struct ext2_super_block));
+   block_size = 1024 << su_blk.s_log_block_size;
+   blocks_per_group = su_blk.s_blocks_per_group;
+   inodes_per_group = su_blk.s_inodes_per_group;
+   
+   uint16_t *buf;
+   uint16_t i;
+   buf = (uint16_t *)&su_blk;
+   set_cursor(8,0);
+   for(i=0;i<20;i++){
+      set_cursor(8+i,0);
+      print_hex(buf[i]);
+   }
 }
 
 void read_bgdt(){
-    struct ext2_group_desc bgdt;
-    read_block(2,0, (void *) &bgdt, sizeof(struct ext2_group_desc));
-    inode_table = bgdt.bg_inode_table;
+   struct ext2_group_desc bgdt;
+   read_block(2,0, (void *) &bgdt, sizeof(struct ext2_group_desc));
+   inode_table = bgdt.bg_inode_table;
+   
+   set_cursor(0,0);
+   print_string("HEY\nblock size: ");
+   print_int(block_size);
+   print_string("\nbpg: ");
+   print_int(blocks_per_group);
+   print_string("\nipg: ");
+   print_int(inodes_per_group);
+   print_string("\ninode tbl: ");
+   print_int(inode_table);
 }
 
 void read_inode(uint32_t inodeNum, struct ext2_inode *inode){
@@ -79,6 +119,13 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
    read_bgdt();
    read_inode(EXT2_ROOT_INO, &inode);
    
+   /*set_cursor(0,0);
+   print_string("HEY\nsize: ");
+   print_int(inode.i_size);
+   print_string("\nreg type: ");
+   print_int(inode.i_mode & EXT2_S_IFREG);
+   */
+
    while(blockNum*block_size < inode.i_size){
       if(inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name, len)){
          return inodeNum;      
