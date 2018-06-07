@@ -161,12 +161,15 @@ void main() {
    uint8_t sd_card_status;
    music_t music;
 
-   sd_card_status = sdInit(1);   //initialize the card with slow clock
-
-   initMusic(&music);
-
    serial_init(); 
    clear_screen();
+   
+   set_cursor(0,0);
+   while(!(sd_card_status = sdInit(1))){   //1 for slow, o for fast
+      print_string("SD CARD IS BROKEN\r\n");
+   }
+   
+   initMusic(&music);
 
    start_audio_pwm();
    sys = os_init_noMain();

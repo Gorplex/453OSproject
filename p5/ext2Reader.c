@@ -17,6 +17,7 @@ void read_block(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size) {
         sdReadData(block*2+1, offset%512, data+512-offset, size-512-offset);
     }
 }*/
+
 void read_block(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size) {
    if(offset < 512){
       //read first 1/2
@@ -32,10 +33,21 @@ void read_block(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size) {
 
 void read_super(){
    struct ext2_super_block su_blk;
+   memset(&su_blk, 0, sizeof(struct ext2_super_block));
+
    read_block(1, 0, (uint8_t *)&su_blk, sizeof(struct ext2_super_block));
    block_size = 1024 << su_blk.s_log_block_size;
    blocks_per_group = su_blk.s_blocks_per_group;
    inodes_per_group = su_blk.s_inodes_per_group;
+   
+   uint16_t *buf;
+   uint16_t i;
+   buf = (uint16_t *)&su_blk;
+   set_cursor(8,0);
+   for(i=0;i<20;i++){
+      set_cursor(8+i,0);
+      print_hex(buf[i]);
+   }
 }
 
 void read_bgdt(){
