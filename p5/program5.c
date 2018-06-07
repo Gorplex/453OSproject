@@ -187,6 +187,13 @@ void main() {
    set_cursor(0,0);
    while(!(sd_card_status = sdInit(1))){   //1 for slow, o for fast
       print_string("SD CARD IS BROKEN\r\n");
+      uint64_t i, j, k;
+      /* for(k=1; k >=1; k++) */
+      /* 	 for(j=0; j < 400000000; j++) */
+	    for(i =0; i < 10000; i++) {
+	       write_byte(0);
+	    }
+      
    }
    
    initMusic(&music);

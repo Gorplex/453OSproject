@@ -53,8 +53,15 @@ inline void spiSSLow(void) {
 /** write data programming error token */
 #define DATA_RES_WRITE_ERROR  0X0D
 
-void error1(uint8_t code) {errorCode_ = code;}
-void error2(uint8_t code, uint8_t data) {errorCode_ = code; errorData_ = data;}
+void error1(uint8_t code) {errorCode_ = code;   print_string("ErrorCode1: ");
+   print_int(code);
+   print_string("\r\n");
+}
+void error2(uint8_t code, uint8_t data) {errorCode_ = code; errorData_ = data; print_string("ErrorCode2: ");
+   print_int(code);
+print_string("  Errordata2: ");
+   print_int(data);
+   print_string("\r\n");}
 
 /**
  * Enable or disable partial block reads.
@@ -96,6 +103,8 @@ uint8_t sdCardCommand(uint8_t cmd, uint32_t arg) {
    uint8_t retry;
    signed char s;
 
+
+   
    // end read if in partialBlockRead mode
    sdReadEnd();
 
@@ -120,7 +129,6 @@ uint8_t sdCardCommand(uint8_t cmd, uint32_t arg) {
 
    // wait for response
    for (retry = 0; ((r1 = spiRec()) & 0X80) && retry != 0XFF; retry++);
-
    return r1;
 }
 
