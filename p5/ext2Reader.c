@@ -1,11 +1,5 @@
 #include "ext2Reader.h"
-
-<<<<<<< HEAD
-
-
-=======
 #include "serial.h"
->>>>>>> dbeb99a08c65dc17ec9da3b424dc1ea33cd76d01
 
 static FILE *fp = 0;
 
