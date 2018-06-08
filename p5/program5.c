@@ -132,10 +132,7 @@ void readMain(music_t *music){
       //set_cursor(49,0);
       //print_string("start");
       inodeNum = readRoot(&fileIndex, music->name, &music->size, &inode);
-      /*set_cursor(50,0);
-      print_string("start reading\tInodeNum: ");
-      print_int32(inodeNum);*/
-      readFile(inodeNum, music->bufNum, music->buf); 
+      readFile(inode, music->bufNum, music->buf); 
       //set_cursor(51,0);
       //print_string("done reading");
       music->bufNum++;

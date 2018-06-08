@@ -164,17 +164,8 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode 
    return inodeNum;
 }
 
-void readFile(uint32_t inodeNum, uint32_t bufNum, uint8_t *buf){
-   struct ext2_inode inode;
+void readFile(struct ext2_inode inode, uint32_t bufNum, uint8_t *buf){
    uint8_t links[256];
-   
-   set_cursor(0,0);
-   //print_string("in func\r\ninodeNum: ");
-   //print_int(inodeNum);
-
-   read_inode(inodeNum, &inode);
-   //print_string("\r\nread Inode\r\nsize:");
-   //print_int32(inode.i_size);
    
    if(bufNum/4 < 12){
       read_block(inode.i_block[bufNum/4], (bufNum%4)*READ_BUF_SIZE, ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
