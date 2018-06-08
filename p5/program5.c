@@ -200,7 +200,7 @@ int main() {
    serial_init();
    clear_screen();
 
-   while(!(sd_card_status = sdInit(1))){   //1 for slow, o for fast */
+   while(!(sd_card_status = sdInit(1))){   //1 for slow, 0 for fast */
       print_string("SD CARD IS BROKEN\r\n"); 
        uint64_t i; 
        for(i =0; i < 10000; i++) { 
