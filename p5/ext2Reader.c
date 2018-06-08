@@ -164,15 +164,19 @@ void readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode *ino
 }
 
 void readFile(struct ext2_inode inode, uint32_t bufNum, uint8_t *buf){
-   uint8_t links[256];
+   static int8_t links[256];
    
+
    if(bufNum/4 < 12){
       read_block(inode.i_block[bufNum/4], (bufNum%4)*READ_BUF_SIZE, 
-         ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, READ_BUF_SIZE);
+         (buf)+(bufNum%2)*READ_BUF_SIZE, READ_BUF_SIZE);
    }else if(bufNum/4 >= 12){
-      read_block(inode.i_block[12], 0, links, block_size);
+      if(bufNum == 12*4){
+         //first read of links
+         read_block(inode.i_block[12], 0, (uint8_t *)links, block_size);
+      }
       read_block(links[bufNum/4-12], (bufNum%4)*READ_BUF_SIZE, 
-         ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, READ_BUF_SIZE);
+         buf+(bufNum%2)*READ_BUF_SIZE, READ_BUF_SIZE);
    }
    //NO DOUBLE LINKS
 }
