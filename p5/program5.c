@@ -30,24 +30,16 @@ typedef struct music_t {
    uint16_t bufNum;
    uint8_t buf[BUF_SIZE];
    uint8_t buf2[BUF_SIZE];
-   uint8_t name[NAME_LEN];
+   char name[NAME_LEN];
 } music_t;
 
 void initMusic(music_t *m){
-
    memset(m, 0, sizeof( music_t));
-   
-   /* m->playI=0; */
-   /* m->readI=0; */
-   /* m->songNum = 0; */
-   /* m->bufNum = 0; */
-   /* m->size = 0; */
+   strcpy(m->name, "no title");
    //bug may not skip back over dirs properly
 }
 
 void printMusic(music_t * m) {
-   char bar[50];      
-
    set_cursor(MUSIC_Y,MUSIC_X);
    set_color(GREEN);
    print_string("Title:\t"); 
@@ -88,8 +80,6 @@ void printMusic(music_t * m) {
       write_byte('_');
    }
    write_byte(']');
-
-   
 }
 
 
@@ -130,13 +120,13 @@ void readMain(music_t *music){
    uint16_t fileIndex;
    uint32_t inodeNum;
 
-   /* sdInit(0); */
    fileIndex = 0;
    
    while(1){
       //first read
-      strcpy(music->name, "no title");
       inodeNum = readRoot(&fileIndex, music->name, &music->size);
+      //set_cursor(0,0);
+      //print_string(music->name);
       readFile(inodeNum, music->bufNum, music->buf); 
       music->bufNum++;
       music->readI=BUF_SIZE;
@@ -160,10 +150,9 @@ void readMain(music_t *music){
 	            break;
 	         }
 	      }  
-	    
 	 	 
          //if queue needs to be filled
-         if(music->readI/BUF_SIZE != music->readI/BUF_SIZE){
+         if(music->readI/BUF_SIZE == music->playI/BUF_SIZE){
             readFile(inodeNum, music->bufNum, music->buf); 
             music->bufNum++;
             music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
@@ -177,7 +166,7 @@ void readMain(music_t *music){
    }
 }
 
-void main() {
+int main() {
    uint8_t sd_card_status;
    music_t music;
 
@@ -213,13 +202,16 @@ void main() {
     } 
    
    initMusic(&music); 
-
+   /*VALIDATED (buzz)
+   for(int i=0;i<512;i++){
+      music.buf[i]=255*(i%2);
+   }*/
    start_audio_pwm(); 
    sys = os_init_noMain();
    
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
    create_thread("reader", (uint16_t) &readMain, &music, 2500);
-   //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
+   create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
 
    os_start();

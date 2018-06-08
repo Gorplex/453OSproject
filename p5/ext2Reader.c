@@ -1,7 +1,4 @@
 #include "ext2Reader.h"
-#include "serial.h"
-
-static FILE *fp = 0;
 
 uint32_t block_size;
 uint32_t blocks_per_group;
@@ -87,15 +84,38 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
    uint8_t buffer[BLOCK_SIZE];
 
    read_block(block, 0, (void *)buffer, block_size); 
+   dirEnt=(struct ext2_dir_entry *)&buffer; 
+   
+   /*set_cursor(0,0);
+   print_string("HEY");
+   */
 
-   sprintf(name, "a: %i, < b: %i, && %i", (((void *)dirEnt) - ((void *)buffer)), block_size, dirEnt->rec_len);
+   //sprintf(name, "a: %i, < b: %i, && %i", (((void *)dirEnt) - ((void *)buffer)), block_size, dirEnt->rec_len);
    while((((void *)dirEnt) - ((void *)buffer)) < block_size && dirEnt->rec_len){
+      /*name[dirEnt->name_len] = '\0';
+      print_string("\r\nI: ");
+      print_int(*curIndex);
+      print_string("\tIT: ");
+      print_int(*index);
+      print_string("\tname: ");
+      print_string(dirEnt->name);
+      */
       if(*curIndex == *index){
+         //print_string("\r\nin if 1");
          read_inode(dirEnt->inode, &inode);
          if(inode.i_mode & EXT2_S_IFREG){
+            //print_string("\r\nin if 2");
             *len = inode.i_size;
-            memcpy(name, dirEnt->name, dirEnt->name_len);
             name[dirEnt->name_len] = '\0';
+            for(int i=0;dirEnt->name_len;i++){
+               name[i]=dirEnt->name[i];
+            }
+            //strcpy(name, "no worky");
+            //name[dirEnt->name_len] = '\0';
+            //memcpy(name, dirEnt->name, dirEnt->name_len);
+            /*set_cursor(0,0);
+            print_string("NAME: ");
+            print_string(name);*/
             return dirEnt->inode;
          }
          *index = *index+1;
@@ -116,7 +136,7 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
    read_bgdt();
    read_inode(EXT2_ROOT_INO, &inode);
    
-
+   /*VERIFYED
    set_cursor(0,0);
    print_string("HEY\r\nsize: ");
    print_int(inode.i_size);
@@ -124,22 +144,21 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
    print_int(inode.i_mode);
    print_string("\r\nfisrt block: ");
    print_int(inode.i_block[0]);
-
+   */
+   curIndex=0;
+   blockNum=0;
    while(blockNum*block_size < inode.i_size){
-      if(inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name, len)){
+      if((inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name, len))){
          return inodeNum;      
       }
       blockNum++;
    }
-
-
    return inodeNum;
 }
 
 void readFile(uint32_t inodeNum, uint32_t bufNum, uint8_t *buf){
    struct ext2_inode inode;
    uint8_t links[256];
-   uint16_t i;
 
    read_inode(inodeNum, &inode);
    
