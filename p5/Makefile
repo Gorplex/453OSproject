@@ -25,7 +25,7 @@ default: program5 program
 program_5: program5
 
 %: %.c $(HEADERS) $(CFILES)
-	avr-gcc -g -Wall -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^
+	avr-gcc -g -Wall -pedantic -mmcu=atmega2560 -DF_CPU=16000000 -O2 -o main.elf $^
 	avr-objcopy -O ihex main.elf main.hex
 	avr-size main.elf
 
