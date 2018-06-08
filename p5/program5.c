@@ -1,11 +1,9 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-//#include "globals.h"
 #include "serial.h"
 #include "os.h"
 #include <util/delay.h>
 #include <stdlib.h>
-//#include "ext2.h"
 #include "SdReader.h"
 #include "printThreads.h"
 #include "ext2Reader.h"
@@ -37,6 +35,21 @@ void initMusic(music_t *m){
    memset(m, 0, sizeof( music_t));
    strcpy(m->name, "no title");
    //bug may not skip back over dirs properly
+}
+
+void printBar(music_t *m){
+   set_cursor(MUSIC_Y+6,MUSIC_X );
+   set_color(GREEN);
+   int i;
+   write_byte('[');
+   for(i=0; i < BAR_LEN * m->bufNum*256/m->size; i++) {
+      write_byte('#'); /* '█'); */
+   }
+   set_color(YELLOW);
+   while(i++ < 50) {
+      write_byte('_');
+   }
+   write_byte(']');
 }
 
 void printMusic(music_t * m) {
@@ -71,19 +84,7 @@ void printMusic(music_t * m) {
    print_string("Song Num:\t"); 
    print_int(m->songNum);
 
-
-   set_cursor(MUSIC_Y+6,MUSIC_X );
-   set_color(GREEN);
-   int i;
-   write_byte('[');
-   for(i=0; i < BAR_LEN * (m->bufNum / 86 /* 85.9375 */) / m->size/22000; i++) {
-      write_byte('#'); /* '█'); */
-   }
-   set_color(YELLOW);
-   while(i++ < 50) {
-      write_byte('_');
-   }
-   write_byte(']');
+   printBar(m);
 }
 
 
@@ -127,20 +128,26 @@ void readMain(music_t *music){
    fileIndex = 0;
    
    while(1){
-      //set_cursor(49,0);
-      //print_string("start");
       readRoot(&fileIndex, music->name, &music->size, &inode);
+      printBar(music);
       readFile(inode, music->bufNum, music->buf); 
-      //set_cursor(51,0);
-      //print_string("done reading");
       music->bufNum++;
       music->readI=BUF_SIZE;
       music->playI=0;
+      
+      set_cursor(music->songNum+1,0);
+      print_string(music->name);
 
       while(1){
          //printMusic(music);
          //print_string("\r\n");
          //print_int(music->bufNum);
+         
+         if(music->bufNum%64==0){
+            set_cursor(50,40);
+            print_int(music->bufNum);
+            printBar(music);
+         }
 
          //end of song load next
          if(music->bufNum * BUF_SIZE >= music->size){
@@ -179,10 +186,6 @@ void readMain(music_t *music){
          }
          thread_sleep(1);
       }
-      /*//wait for player to be in second buffer
-      while(!(music->playI/BUF_SIZE)){
-         thread_sleep(1);
-      }*/
    }
 }
 
@@ -204,13 +207,13 @@ int main() {
    
    initMusic(&music); 
    //VALIDATED (buzz)
-   for(int i=0;i<512;i++){
-      music.buf[i]=255*(i%(2+2*(i/256)));
-   }
-   /*for(int i=0;i<256;i++){
+   //for(int i=0;i<512;i++){
+   //   music.buf[i]=255*(i%(2+2*(i/256)));
+   //}
+   for(int i=0;i<256;i++){
       music.buf[i]=0;
       music.buf2[i]=0;
-   }*/
+   }
    start_audio_pwm(); 
    sys = os_init_noMain();
     
