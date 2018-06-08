@@ -138,9 +138,6 @@ void readMain(music_t *music){
       music->readI=BUF_SIZE;
 
       while(1){
-      }
-
-      while(1){
          //end of song load next
          if(music->bufNum * BUF_SIZE >= music->size){
             music->songNum++;
@@ -166,11 +163,13 @@ void readMain(music_t *music){
             music->bufNum++;
             music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
          }
-         yield();
+         thread_sleep(10);
       }
       //wait for player to be in second buffer
       while(!(music->playI/BUF_SIZE)){
-         yield();
+         //may not need
+         music->playI=BUF_SIZE;
+         thread_sleep(10);
       }
    }
 }
