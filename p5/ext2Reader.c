@@ -79,8 +79,15 @@ void readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode *ino
    uint16_t blockNum;
    uint32_t inodeNum;
 
-   read_super();
-   read_bgdt();
+   //replaced by hardcode
+   //read_super();
+   block_size = 1024;
+   blocks_per_group = 8192;
+   inodes_per_group = 7696;
+   //replaced by hardcode
+   //read_bgdt();
+   inode_table = 5;
+   
    read_inode(EXT2_ROOT_INO, &root);
    
    curIndex=0;
