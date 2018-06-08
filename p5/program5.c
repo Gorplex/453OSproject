@@ -142,50 +142,42 @@ void readMain(music_t *music){
       */
 
       while(1){
-         //printMusic(music);
          //print_string("\r\n");
          //print_int(music->bufNum);
          
-         /*if(music->bufNum%64==0){
-            set_cursor(20,40);
-            print_int(music->bufNum);
-            printBar(music);
-         }*/
-
-         //end of song load next
-         /*if(music->bufNum * BUF_SIZE >= music->size){
-            music->songNum++;
-            break;
-         }*/
-
-	      if(byte_available()) {
-            uint8_t c = read_byte();
-            if(c == 'p') {
-               fileIndex--;
-               music->songNum--;
-	            music->bufNum=0;
-               for(int i=0;i<256;i++){
-                  music->buf[i]=0;
-                  music->buf2[i]=0;
-               }
-               break;
-            }else if( c == 'n') {
-               fileIndex++;
-	            music->songNum++;
-	            music->bufNum=0;
-               for(int i=0;i<256;i++){
-                  music->buf[i]=0;
-                  music->buf2[i]=0;
-               }
-	            break;
-	         }
-	      }  
-	 	 
-         //if queue needs to be filled (player in other buffer
+         //if queue needs to be filled (player in other buffer)
          if(music->readI/BUF_SIZE != music->playI/BUF_SIZE){
             readFile(inode, music->bufNum, music->buf); 
             music->bufNum++;
             music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
+            
+            if(byte_available()) {
+               uint8_t c = read_byte();
+               if(c == 'p') {
+                  fileIndex--;
+                  music->songNum--;
+                  music->bufNum=0;
+                  for(int i=0;i<256;i++){
+                     music->buf[i]=0;
+                     music->buf2[i]=0;
+                  }
+                  break;
+               }else if( c == 'n') {
+                  fileIndex++;
+                  music->songNum++;
+                  music->bufNum=0;
+                  for(int i=0;i<256;i++){
+                     music->buf[i]=0;
+                     music->buf2[i]=0;
+                  }
+                  break;
+               }
+	         }
+            //end of song load next
+            /*if(music->bufNum * BUF_SIZE >= music->size){
+               music->songNum++;
+               break;
+            }*/
          }
          yield();
       }
