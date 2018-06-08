@@ -181,30 +181,45 @@ void main() {
    uint8_t sd_card_status;
    music_t music;
 
-   serial_init(); 
-   clear_screen();
-   
-   set_cursor(0,0);
-   while(!(sd_card_status = sdInit(1))){   //1 for slow, o for fast
-      print_string("SD CARD IS BROKEN\r\n");
-      uint64_t i, j, k;
-      /* for(k=1; k >=1; k++) */
-      /* 	 for(j=0; j < 400000000; j++) */
-	    for(i =0; i < 10000; i++) {
-	       write_byte(0);
-	    }
-      
+   while(1) {
+
+      sd_card_status = sdInit(0);   //initialize the card with slow clock
+      serial_init(); 
+      print_int(sd_card_status);
+      print_string(" sd card \n\r");
+
+      uint8_t buf[512];
+      memset( buf, 2, 512);
+      sdReadData(10, 0, buf, 500);
+
+      int i;
+      for(i=0; i < 500; i++) {
+	 print_int(buf[i]);
+	 print_string(", ");
+      }
+
    }
+      
+   /* serial_init();  */
    
-   initMusic(&music);
-
-   start_audio_pwm();
-   sys = os_init_noMain();
+   /* while(!(sd_card_status = sdInit(1))){   //1 for slow, o for fast */
+   /*    print_string("SD CARD IS BROKEN\r\n"); */
+   /*    uint64_t i; */
+   /*    for(i =0; i < 10000; i++) { */
+   /* 	 write_byte(0); */
+   /*    } */
+      
+   /* } */
    
-   create_thread("playback", (uint16_t) &playbackMain, &music, 5);
-   create_thread("reader", (uint16_t) &readMain, &music, 2500);
-   //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
-   create_thread("idle", (uint16_t) &idle, NULL, 5);
+   /* initMusic(&music); */
 
-   os_start();
+   /* start_audio_pwm(); */
+   /* sys = os_init_noMain(); */
+   
+   /* create_thread("playback", (uint16_t) &playbackMain, &music, 5); */
+   /* create_thread("reader", (uint16_t) &readMain, &music, 2500); */
+   /* //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE); */
+   /* create_thread("idle", (uint16_t) &idle, NULL, 5); */
+
+   /* os_start(); */
 }
