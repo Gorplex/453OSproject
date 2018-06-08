@@ -138,6 +138,9 @@ void readMain(music_t *music){
       music->readI=BUF_SIZE;
 
       while(1){
+      }
+
+      while(1){
          //end of song load next
          if(music->bufNum * BUF_SIZE >= music->size){
             music->songNum++;
@@ -216,7 +219,7 @@ int main() {
    sys = os_init_noMain();
    
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
-   create_thread("reader", (uint16_t) &readMain, &music, 2500);
+   create_thread("reader", (uint16_t) &readMain, &music, 5000);
    create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
 

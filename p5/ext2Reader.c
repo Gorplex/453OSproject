@@ -111,7 +111,7 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
             for(int i=0;i<dirEnt->name_len && i<255;i++){
                name[i]=dirEnt->name[i];
             }
-            name[255]='\0';
+            //name[255]='\0';
             //strcpy(name, "no worky");
             //name[dirEnt->name_len] = '\0';
             //memcpy(name, dirEnt->name, dirEnt->name_len);
@@ -153,7 +153,7 @@ void readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode *ino
    //print_string("\r\nbefore loop");
    curIndex=0;
    blockNum=0;
-   while(blockNum*block_size < root.i_size){
+   while(blockNum*block_size < 1){    //while(blockNum*block_size < root.i_size){
       if((inodeNum = readDirBlock(root.i_block[blockNum], &curIndex, index, name, len, inode))){
          break;      
       }
@@ -167,10 +167,12 @@ void readFile(struct ext2_inode inode, uint32_t bufNum, uint8_t *buf){
    uint8_t links[256];
    
    if(bufNum/4 < 12){
-      read_block(inode.i_block[bufNum/4], (bufNum%4)*READ_BUF_SIZE, ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
+      read_block(inode.i_block[bufNum/4], (bufNum%4)*READ_BUF_SIZE, 
+         ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, READ_BUF_SIZE);
    }else if(bufNum/4 >= 12){
       read_block(inode.i_block[12], 0, links, block_size);
-      read_block(links[bufNum/4-12], (bufNum%4)*READ_BUF_SIZE, ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
+      read_block(links[bufNum/4-12], (bufNum%4)*READ_BUF_SIZE, 
+         ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, READ_BUF_SIZE);
    }
    //NO DOUBLE LINKS
 }
