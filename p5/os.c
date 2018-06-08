@@ -122,7 +122,8 @@ uint8_t get_next_thread(){
 uint8_t get_next_thread(){
    uint8_t next;
    //check_sleeping_threads();   MOVED TO ISR FOR SPEED
-   next = 0;   //next always starts at thread 0, priority queue
+   //next = 0;   //next always starts at thread 0, priority queue
+   next = (sys->curThread+1)%sys->threadCount;
    while(sys->threads[next].thread_status != THREAD_READY){ //removed it alowing the running thread to run
       next = (next+1)%sys->threadCount;
       if(next == sys->curThread){

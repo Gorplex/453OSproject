@@ -139,8 +139,8 @@ void readMain(music_t *music){
 
       while(1){
          //printMusic(music);
-         print_string("\r\n");
-         print_int(music->bufNum);
+         //print_string("\r\n");
+         //print_int(music->bufNum);
 
          //end of song load next
          if(music->bufNum * BUF_SIZE >= music->size){
@@ -154,11 +154,19 @@ void readMain(music_t *music){
                fileIndex--;
                music->songNum--;
 	            music->bufNum=0;
+               for(int i=0;i<256;i++){
+                  music->buf[i]=0;
+                  music->buf2[i]=0;
+               }
                break;
             }else if( c == 'n') {
                fileIndex++;
 	            music->songNum++;
 	            music->bufNum=0;
+               for(int i=0;i<256;i++){
+                  music->buf[i]=0;
+                  music->buf2[i]=0;
+               }
 	            break;
 	         }
 	      }  
@@ -171,10 +179,10 @@ void readMain(music_t *music){
          }
          thread_sleep(1);
       }
-      //wait for player to be in second buffer
+      /*//wait for player to be in second buffer
       while(!(music->playI/BUF_SIZE)){
          thread_sleep(1);
-      }
+      }*/
    }
 }
 
