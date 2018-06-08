@@ -122,7 +122,6 @@ void playbackMain(music_t *music){
 
 void readMain(music_t *music){
    uint16_t fileIndex;
-   uint32_t inodeNum;
    struct ext2_inode inode;
 
    fileIndex = 0;
@@ -131,7 +130,7 @@ void readMain(music_t *music){
       //first read
       //set_cursor(49,0);
       //print_string("start");
-      inodeNum = readRoot(&fileIndex, music->name, &music->size, &inode);
+      readRoot(&fileIndex, music->name, &music->size, &inode);
       readFile(inode, music->bufNum, music->buf); 
       //set_cursor(51,0);
       //print_string("done reading");
@@ -160,7 +159,7 @@ void readMain(music_t *music){
 	 	 
          //if queue needs to be filled
          if(music->readI/BUF_SIZE == music->playI/BUF_SIZE){
-            readFile(inodeNum, music->bufNum, music->buf); 
+            readFile(inode, music->bufNum, music->buf); 
             music->bufNum++;
             music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
          }

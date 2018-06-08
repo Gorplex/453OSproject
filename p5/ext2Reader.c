@@ -130,7 +130,7 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
    return 0;
 }
 
-uint32_t readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode *inode){
+void readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode *inode){
    struct ext2_inode root;
    uint16_t curIndex;
    uint16_t blockNum;
@@ -155,13 +155,12 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode 
    blockNum=0;
    while(blockNum*block_size < root.i_size){
       if((inodeNum = readDirBlock(root.i_block[blockNum], &curIndex, index, name, len, inode))){
-         return inodeNum;      
+         break;      
       }
       //print_string("\r\nloop inode num:");
       //print_int(inodeNum);
       blockNum++;
    }
-   return inodeNum;
 }
 
 void readFile(struct ext2_inode inode, uint32_t bufNum, uint8_t *buf){
@@ -176,78 +175,3 @@ void readFile(struct ext2_inode inode, uint32_t bufNum, uint8_t *buf){
    //NO DOUBLE LINKS
 }
 
-/*OLD
-void print_file(struct ext2_inode *inode){
-    uint32_t buf[256];
-    uint32_t bufofbuf[256];
-    uint32_t size;
-    uint16_t i;
-    uint16_t j;
-
-    size=inode->i_size;
-    for(i=0;size>0 && i<12;i++){
-        print_block(inode->i_block[i], MIN(block_size, size));
-        size -= MIN(block_size, size);
-    }
-    read_block(inode->i_block[12], 0, (void *)&buf, block_size);
-    for(i=0;size>0 && i<256;i++){
-        print_block(buf[i], MIN(block_size, size));
-        size -= MIN(block_size, size);
-    }
-    read_block(inode->i_block[13], 0, (void *)bufofbuf, block_size);
-    for(j=0;size>0 && j<256;j++){
-        read_block(bufofbuf[j], 0, (void *)buf, block_size);
-        for(i=0;size>0 && i<256;i++){
-            print_block(buf[i], MIN(block_size, size));
-            size -= MIN(block_size, size);
-        }
-    }
-}
-
-uint32_t check_dir_block(uint32_t block, char * dirName){
-    struct ext2_dir_entry *dirEnt;
-    uint8_t buffer[BLOCK_SIZE];
-    uint16_t nameLen = strlen(dirName);
-     
-    read_block(block, 0, (void *)buffer, block_size); 
-    dirEnt=(void *)buffer;
-    while((((void *)dirEnt) - ((void *)buffer)) < block_size){
-        if(dirEnt->name_len == nameLen){
-            if(!strncmp(dirEnt->name, dirName, nameLen)){
-                return dirEnt->inode; 
-            }
-        }
-        dirEnt = (struct ext2_dir_entry *) (dirEnt->rec_len + ((void *)dirEnt));
-   } 
-   return 0;
-}
-
-void follow_path(uint32_t inodeNum, char *dirName){
-    struct ext2_inode inode;
-    uint32_t blockNum;
-    uint32_t nextInode;
-    char *nextName;
-    
-    read_inode(inodeNum, &inode); 
-    blockNum = 0;
-    nextInode = 0;
-    while(blockNum*BLOCK_SIZE < inode.i_size){
-        nextInode = check_dir_block(inode.i_block[blockNum], dirName);
-        if(nextInode){
-            nextName = strtok(NULL, "/");
-            if(nextName){
-                follow_path(nextInode, nextName);
-            }else{
-               print_inode(nextInode); 
-            }
-            break;
-        }
-        blockNum++;
-    }
-    if(!nextInode){
-        printf("file not found\n");
-        fclose(fp);
-        exit(EXIT_FAILURE);
-    }
-}
-*/
