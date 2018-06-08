@@ -13,7 +13,7 @@ CFILES  = os.c synchro.c printThreads.c serial.c SdReader.c ext2Reader.c
 #else
 #   DEVICE = /dev/ttyACM0 
 #endif
-WIN = COM12
+WIN = COM10
 LNX = /dev/ttyACM0 
 
 #default target to compile the code

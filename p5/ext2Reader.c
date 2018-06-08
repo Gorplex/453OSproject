@@ -39,6 +39,7 @@ void read_super(){
    blocks_per_group = su_blk.s_blocks_per_group;
    inodes_per_group = su_blk.s_inodes_per_group;
    
+   /*VERIFYED
    uint16_t *buf;
    uint16_t i;
    buf = (uint16_t *)&su_blk;
@@ -46,23 +47,25 @@ void read_super(){
    for(i=0;i<20;i++){
       set_cursor(8+i,0);
       print_hex(buf[i]);
-   }
+   }*/
 }
 
 void read_bgdt(){
    struct ext2_group_desc bgdt;
    read_block(2,0, (void *) &bgdt, sizeof(struct ext2_group_desc));
    inode_table = bgdt.bg_inode_table;
-   
+  
+   /*VERIFYED
    set_cursor(0,0);
-   print_string("HEY\nblock size: ");
+   print_string("HEY\r\nblock size: ");
    print_int(block_size);
-   print_string("\nbpg: ");
+   print_string("\r\nbpg: ");
    print_int(blocks_per_group);
-   print_string("\nipg: ");
+   print_string("\r\nipg: ");
    print_int(inodes_per_group);
-   print_string("\ninode tbl: ");
+   print_string("\r\ninode tbl: ");
    print_int(inode_table);
+   */
 }
 
 void read_inode(uint32_t inodeNum, struct ext2_inode *inode){
@@ -113,12 +116,14 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
    read_bgdt();
    read_inode(EXT2_ROOT_INO, &inode);
    
-   /*set_cursor(0,0);
-   print_string("HEY\nsize: ");
+
+   set_cursor(0,0);
+   print_string("HEY\r\nsize: ");
    print_int(inode.i_size);
-   print_string("\nreg type: ");
-   print_int(inode.i_mode & EXT2_S_IFREG);
-   */
+   print_string("\r\nroot mode: ");
+   print_int(inode.i_mode);
+   print_string("\r\nfisrt block: ");
+   print_int(inode.i_block[0]);
 
    while(blockNum*block_size < inode.i_size){
       if(inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name, len)){

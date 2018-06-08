@@ -103,7 +103,7 @@ void check_sleeping_threads(){
 
 //if no valid thread to swap to returns same thread
 //because it is called while interrupts are disabled
-/*
+
 uint8_t get_next_thread(){
    uint8_t next;
    check_sleeping_threads();
@@ -116,9 +116,9 @@ uint8_t get_next_thread(){
       }
    }
    return next;
-}*/
+}
 //Project 5 PRIORITY
-uint8_t get_next_thread(){
+/*uint8_t get_next_thread(){
    uint8_t next;
    check_sleeping_threads();
    next = 0;   //next always starts at thread 0, priority queue
@@ -130,7 +130,7 @@ uint8_t get_next_thread(){
       }
    }
    return next;
-}
+}*/
 
 __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
    //push 
