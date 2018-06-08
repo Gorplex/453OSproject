@@ -217,10 +217,6 @@ __attribute__((naked)) void context_switch(uint16_t* new_sp, uint16_t* old_sp) {
 //START SENG
 //This interrupt routine is automatically run every 10 milliseconds
 ISR(TIMER0_COMPA_vect) {
-   //END SENG
-   uint8_t last;
-   
-   //START SENG
    //At the beginning of this ISR, the registers r0, r1, and r18-31 have 
    //already been pushed to the stack
 
@@ -328,8 +324,6 @@ void thread_sleep(uint16_t ticks){
 }
 
 void yield(){
-   TID_T next;
-
    cli(); 
    thread_swap(get_next_thread());
    sei();
