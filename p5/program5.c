@@ -110,12 +110,12 @@ void idle(uint16_t *args){
 void playbackMain(music_t *music){
    while(1){
       /* if not in same buffer (aka, wait till 1st buf read) */
-      if(music->readI/BUF_SIZE != music->playI/BUF_SIZE){
+      //if(music->readI/BUF_SIZE != music->playI/BUF_SIZE){
          OCR2B = music->buf[music->playI++];
          if(music->playI >= 512){
             music->playI = 0;
          }
-      }
+      //}
       thread_sleep(1);   //sleep for 45us (1s/22000)
    }
 }
@@ -135,11 +135,12 @@ void readMain(music_t *music){
       //print_string("done reading");
       music->bufNum++;
       music->readI=BUF_SIZE;
+      music->playI=0;
 
       while(1){
          //printMusic(music);
-         set_cursor(0,0);
-         print_int(music->bufNum);
+         //print_string("\r\n");
+         //print_int(music->bufNum);
 
          //end of song load next
          if(music->bufNum * BUF_SIZE >= music->size){
@@ -152,27 +153,27 @@ void readMain(music_t *music){
             if(c == 'p') {
                fileIndex--;
                music->songNum--;
+	            music->bufNum=0;
                break;
             }else if( c == 'n') {
                fileIndex++;
 	            music->songNum++;
+	            music->bufNum=0;
 	            break;
 	         }
 	      }  
 	 	 
-         //if queue needs to be filled
-         if(music->readI/BUF_SIZE == music->playI/BUF_SIZE){
+         //if queue needs to be filled (player in other buffer
+         if(music->readI/BUF_SIZE != music->playI/BUF_SIZE){
             readFile(inode, music->bufNum, music->buf); 
             music->bufNum++;
             music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
          }
-         thread_sleep(10);
+         thread_sleep(1);
       }
       //wait for player to be in second buffer
       while(!(music->playI/BUF_SIZE)){
-         //may not need
-         music->playI=BUF_SIZE;
-         thread_sleep(10);
+         thread_sleep(1);
       }
    }
 }
@@ -195,15 +196,19 @@ int main() {
    
    initMusic(&music); 
    //VALIDATED (buzz)
-   /*for(int i=0;i<512;i++){
+   for(int i=0;i<512;i++){
       music.buf[i]=255*(i%(2+2*(i/256)));
+   }
+   /*for(int i=0;i<256;i++){
+      music.buf[i]=0;
+      music.buf2[i]=0;
    }*/
    start_audio_pwm(); 
    sys = os_init_noMain();
     
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
    create_thread("reader", (uint16_t) &readMain, &music, 5000);
-   //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
+   create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
    
    //set_cursor(0,0);

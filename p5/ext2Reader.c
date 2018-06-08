@@ -164,7 +164,7 @@ void readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode *ino
 }
 
 void readFile(struct ext2_inode inode, uint32_t bufNum, uint8_t *buf){
-   static int8_t links[256];
+   static int32_t links[256];
    
 
    if(bufNum/4 < 12){
