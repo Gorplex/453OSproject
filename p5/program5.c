@@ -127,7 +127,6 @@ void readMain(music_t *music){
    fileIndex = 0;
    
    while(1){
-      //first read
       //set_cursor(49,0);
       //print_string("start");
       readRoot(&fileIndex, music->name, &music->size, &inode);
@@ -138,9 +137,9 @@ void readMain(music_t *music){
       music->readI=BUF_SIZE;
 
       while(1){
-         printMusic(music);
-         //set_cursor(0,0);
-         //print_int(music->bufNum);
+         //printMusic(music);
+         set_cursor(0,0);
+         print_int(music->bufNum);
 
          //end of song load next
          if(music->bufNum * BUF_SIZE >= music->size){
@@ -201,11 +200,14 @@ int main() {
    }*/
    start_audio_pwm(); 
    sys = os_init_noMain();
-   
+    
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
    create_thread("reader", (uint16_t) &readMain, &music, 5000);
    //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
+   
+   //set_cursor(0,0);
+   //print_string("OS START");
 
    os_start();
 }
