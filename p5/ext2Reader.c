@@ -78,8 +78,7 @@ void read_inode(uint32_t inodeNum, struct ext2_inode *inode){
         (void *)inode, EXT2_GOOD_OLD_INODE_SIZE);
 }
 
-uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char *name, uint32_t *len){
-   struct ext2_inode inode;
+uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char *name, uint32_t *len, struct ext2_inode *inode){
    struct ext2_dir_entry *dirEnt;
    uint8_t buffer[BLOCK_SIZE];
 
@@ -91,7 +90,7 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
    */
 
    //sprintf(name, "a: %i, < b: %i, && %i", (((void *)dirEnt) - ((void *)buffer)), block_size, dirEnt->rec_len);
-   while((((void *)dirEnt) - ((void *)buffer)) < block_size && dirEnt->rec_len){
+   while((((uint8_t *)dirEnt) - ((uint8_t *)buffer)) < block_size && dirEnt->rec_len){
       /*name[dirEnt->name_len] = '\0';
       print_string("\r\nI: ");
       print_int(*curIndex);
@@ -102,39 +101,44 @@ uint32_t readDirBlock(uint32_t block, uint16_t *curIndex, uint16_t *index, char 
       */
       if(*curIndex == *index){
          //print_string("\r\nin if 1");
-         read_inode(dirEnt->inode, &inode);
-         if(inode.i_mode & EXT2_S_IFREG){
+         read_inode(dirEnt->inode, inode);
+         if(inode->i_mode & EXT2_S_IFREG){
             //print_string("\r\nin if 2");
-            *len = inode.i_size;
+            *len = inode->i_size;
+            //set_cursor(0,0);
+            //print_int32(*len);
             name[dirEnt->name_len] = '\0';
-            for(int i=0;dirEnt->name_len;i++){
+            for(int i=0;i<dirEnt->name_len && i<255;i++){
                name[i]=dirEnt->name[i];
             }
+            name[255]='\0';
             //strcpy(name, "no worky");
             //name[dirEnt->name_len] = '\0';
             //memcpy(name, dirEnt->name, dirEnt->name_len);
             /*set_cursor(0,0);
             print_string("NAME: ");
-            print_string(name);*/
+            print_string(name);
+            print_string("inodeNum: ");
+            print_int32(dirEnt->inode);*/
             return dirEnt->inode;
          }
          *index = *index+1;
       }
       *curIndex = *curIndex+1;
-      dirEnt = (struct ext2_dir_entry *) (dirEnt->rec_len + ((void *)dirEnt));
+      dirEnt = (struct ext2_dir_entry *) (dirEnt->rec_len + ((uint8_t *)dirEnt));
    }
    return 0;
 }
 
-uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
-   struct ext2_inode inode;
+uint32_t readRoot(uint16_t *index, char *name, uint32_t *len, struct ext2_inode *inode){
+   struct ext2_inode root;
    uint16_t curIndex;
    uint16_t blockNum;
    uint32_t inodeNum;
 
    read_super();
    read_bgdt();
-   read_inode(EXT2_ROOT_INO, &inode);
+   read_inode(EXT2_ROOT_INO, &root);
    
    /*VERIFYED
    set_cursor(0,0);
@@ -145,12 +149,16 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
    print_string("\r\nfisrt block: ");
    print_int(inode.i_block[0]);
    */
+   //set_cursor(0,0);
+   //print_string("\r\nbefore loop");
    curIndex=0;
    blockNum=0;
-   while(blockNum*block_size < inode.i_size){
-      if((inodeNum = readDirBlock(inode.i_block[blockNum], &curIndex, index, name, len))){
+   while(blockNum*block_size < root.i_size){
+      if((inodeNum = readDirBlock(root.i_block[blockNum], &curIndex, index, name, len, inode))){
          return inodeNum;      
       }
+      //print_string("\r\nloop inode num:");
+      //print_int(inodeNum);
       blockNum++;
    }
    return inodeNum;
@@ -159,14 +167,20 @@ uint32_t readRoot(uint16_t *index, char *name, uint32_t *len){
 void readFile(uint32_t inodeNum, uint32_t bufNum, uint8_t *buf){
    struct ext2_inode inode;
    uint8_t links[256];
+   
+   set_cursor(0,0);
+   //print_string("in func\r\ninodeNum: ");
+   //print_int(inodeNum);
 
    read_inode(inodeNum, &inode);
+   //print_string("\r\nread Inode\r\nsize:");
+   //print_int32(inode.i_size);
    
    if(bufNum/4 < 12){
-      read_block(inode.i_block[bufNum/4], (bufNum%4)*READ_BUF_SIZE, ((void *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
+      read_block(inode.i_block[bufNum/4], (bufNum%4)*READ_BUF_SIZE, ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
    }else if(bufNum/4 >= 12){
       read_block(inode.i_block[12], 0, links, block_size);
-      read_block(links[bufNum/4-12], (bufNum%4)*READ_BUF_SIZE, ((void *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
+      read_block(links[bufNum/4-12], (bufNum%4)*READ_BUF_SIZE, ((uint8_t *)buf)+(bufNum%2)*READ_BUF_SIZE, MIN(block_size, inode.i_size-bufNum*READ_BUF_SIZE));
    }
    //NO DOUBLE LINKS
 }

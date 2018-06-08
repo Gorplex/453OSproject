@@ -16,7 +16,7 @@
 
 /* music display stuff */
 #define BAR_LEN 50
-#define MUSIC_X 30
+#define MUSIC_X 25
 #define MUSIC_Y 37
 system_t *sys;
 
@@ -47,28 +47,32 @@ void printMusic(music_t * m) {
 
    set_cursor(MUSIC_Y+1,MUSIC_X);
    set_color(GREEN);
-   print_string("Song Time:\t"); 
-   print_int( m->bufNum / 86 /* 85.9375 */);
-
+   print_string("Buf num:\t"); 
+   print_int32( m->bufNum);
 
    set_cursor(MUSIC_Y+2,MUSIC_X);
-   set_color(YELLOW);
-   print_string("Song Time:\t"); 
-   print_int( m->bufNum / 86 /* 85.9375 */);
+   set_color(GREEN);
+   print_string("Cur Time:\t"); 
+   print_int32( m->bufNum / 86 /* 85.9375 */);
 
    set_cursor(MUSIC_Y+3,MUSIC_X);
-   set_color(GREEN);
-   print_string("Song Length:\t"); 
-   print_int( m->size / 22000);
-
+   set_color(YELLOW);
+   print_string("File Len:\t"); 
+   print_int32(m->size);
 
    set_cursor(MUSIC_Y+4,MUSIC_X);
    set_color(GREEN);
+   print_string("Song Time:\t"); 
+   print_int32( m->size / 22000);
+
+
+   set_cursor(MUSIC_Y+5,MUSIC_X);
+   set_color(GREEN);
    print_string("Song Num:\t"); 
-   print_int( m->songNum);
+   print_int(m->songNum);
 
 
-   set_cursor(MUSIC_Y+5,MUSIC_X );
+   set_cursor(MUSIC_Y+6,MUSIC_X );
    set_color(GREEN);
    int i;
    write_byte('[');
@@ -119,15 +123,21 @@ void playbackMain(music_t *music){
 void readMain(music_t *music){
    uint16_t fileIndex;
    uint32_t inodeNum;
+   struct ext2_inode inode;
 
    fileIndex = 0;
    
    while(1){
       //first read
-      inodeNum = readRoot(&fileIndex, music->name, &music->size);
-      //set_cursor(0,0);
-      //print_string(music->name);
+      //set_cursor(49,0);
+      //print_string("start");
+      inodeNum = readRoot(&fileIndex, music->name, &music->size, &inode);
+      /*set_cursor(50,0);
+      print_string("start reading\tInodeNum: ");
+      print_int32(inodeNum);*/
       readFile(inodeNum, music->bufNum, music->buf); 
+      //set_cursor(51,0);
+      //print_string("done reading");
       music->bufNum++;
       music->readI=BUF_SIZE;
 
