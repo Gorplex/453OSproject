@@ -129,33 +129,34 @@ void readMain(music_t *music){
    
    while(1){
       readRoot(&fileIndex, music->name, &music->size, &inode);
-      printBar(music);
+      //printBar(music);
       readFile(inode, music->bufNum, music->buf); 
       music->bufNum++;
       music->readI=BUF_SIZE;
       music->playI=0;
       
-      set_cursor(20,40);
+      /*set_cursor(20,40);
       print_int(music->bufNum);
       set_cursor(music->songNum+1,0);
       print_string(music->name);
+      */
 
       while(1){
          //printMusic(music);
          //print_string("\r\n");
          //print_int(music->bufNum);
          
-         if(music->bufNum%64==0){
+         /*if(music->bufNum%64==0){
             set_cursor(20,40);
             print_int(music->bufNum);
             printBar(music);
-         }
+         }*/
 
          //end of song load next
-         if(music->bufNum * BUF_SIZE >= music->size){
+         /*if(music->bufNum * BUF_SIZE >= music->size){
             music->songNum++;
             break;
-         }
+         }*/
 
 	      if(byte_available()) {
             uint8_t c = read_byte();
@@ -186,7 +187,7 @@ void readMain(music_t *music){
             music->bufNum++;
             music->readI = (music->readI+BUF_SIZE)%(BUF_SIZE*2);
          }
-         thread_sleep(1);
+         yield();
       }
    }
 }
@@ -208,7 +209,6 @@ int main() {
     } 
    
    initMusic(&music); 
-   //VALIDATED (buzz)
    //for(int i=0;i<512;i++){
    //   music.buf[i]=255*(i%(2+2*(i/256)));
    //}
@@ -220,12 +220,9 @@ int main() {
    sys = os_init_noMain();
     
    create_thread("playback", (uint16_t) &playbackMain, &music, 5);
-   create_thread("reader", (uint16_t) &readMain, &music, 5000);
-   //create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
+   create_thread("reader", (uint16_t) &readMain, &music, 2500);
+   create_thread("stats", (uint16_t) &printThreadsMain, &music, PRINT_THREAD_SIZE);
    create_thread("idle", (uint16_t) &idle, NULL, 5);
    
-   //set_cursor(0,0);
-   //print_string("OS START");
-
    os_start();
 }
