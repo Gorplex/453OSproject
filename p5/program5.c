@@ -42,7 +42,7 @@ void printBar(music_t *m){
    set_color(GREEN);
    int i;
    write_byte('[');
-   for(i=0; i < BAR_LEN * m->bufNum*256/m->size; i++) {
+   for(i=0; i < BAR_LEN * 100 * m->bufNum*256/m->size; i++) {
       write_byte('#'); /* '█'); */
    }
    set_color(YELLOW);
@@ -135,6 +135,8 @@ void readMain(music_t *music){
       music->readI=BUF_SIZE;
       music->playI=0;
       
+      set_cursor(20,40);
+      print_int(music->bufNum);
       set_cursor(music->songNum+1,0);
       print_string(music->name);
 
@@ -144,7 +146,7 @@ void readMain(music_t *music){
          //print_int(music->bufNum);
          
          if(music->bufNum%64==0){
-            set_cursor(50,40);
+            set_cursor(20,40);
             print_int(music->bufNum);
             printBar(music);
          }
