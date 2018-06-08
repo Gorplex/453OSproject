@@ -236,7 +236,7 @@ ISR(TIMER0_COMPA_vect) {
    
    sys->mtime += MS_PER_TICK;
    check_sleeping_threads();
-   thread_swap(get_next_thread());
+   thread_swap(0);
 }
 
 //next two functions for p3
