@@ -27,29 +27,29 @@ void printThread(thread_t thread) {
    /* set_color(WHITE); */
    /* print_string("\tStack End: ");   set_color(BR_WHITE);   print_hex(thread.stackEnd); */
    set_color(RED);
-   print_string("\r\n\tThread Status:\t");   set_color(BR_RED);   
+   print_string("\r\n\tThrd Stat:\t");   set_color(BR_RED);   
    //extra spacing to overwrite longer words
    switch(thread.thread_status){
       case THREAD_RUNNING:
-      print_string("THREAD RUNNING "); 
+      print_string("RUNNING "); 
       break;
       case THREAD_READY:
-      print_string("THREAD READY   "); 
+      print_string("READY   "); 
       break;
       case THREAD_SLEEPING:
-      print_string("THREAD SLEEPING"); 
+      print_string("SLEEPING"); 
       break;
       case THREAD_WAITING:
-      print_string("THREAD WAITING "); 
+      print_string("WAITING "); 
       break;
       default:
-      print_string("UNRECOGNIZED   "); 
+      print_string("UNKNOWN "); 
       break;
    }
    set_color(GREEN);
-   print_string("\r\n\tWakeup Time: ");   set_color(BR_GREEN);   print_int32_spaces(thread.wakeup_time);
+   print_string("\r\n\tWakeup T: ");   set_color(BR_GREEN);   print_int32_spaces(thread.wakeup_time);
    set_color(YELLOW);
-   print_string("\r\n\tSchedule Count:   ");   set_color(BR_YELLOW);   print_int_spaces(thread.sched_count);
+   print_string("\r\n\tSched Count:   ");   set_color(BR_YELLOW);   print_int_spaces(thread.sched_count);
    print_string("\r\n");
 } 
 
@@ -58,12 +58,10 @@ void printSys(system_t * sys) {
 
    set_cursor(1,1);
    set_color(CYAN);
-   print_string("Program 3\r\n");
-   print_string("System Time: ");               print_int32(sys->time);
-   print_string("s \t(");                        print_int32(sys->mtime);
-   print_string("ms)");
-   print_string("\r\nNumber of Threads: ");     print_int(sys->threadCount);
-   print_string("\r\nSwaps Per Second: ");     print_int_spaces(sys->sched_count);
+   print_string("Prgm 5\r\n");
+   print_string("Sys T: ");               print_int32(sys->time);
+   print_string("ms\r\n#Thrds: ");     print_int(sys->threadCount);
+   print_string("\r\nSPS: ");     print_int_spaces(sys->sched_count);
 
    print_string("\r\n\r\n");
    for(i=0; i < sys->threadCount; i++) {
