@@ -74,7 +74,7 @@ void play_file(int inode_num) {
       play_fs_block(inode->i_block[i]);
       while(index<1024);
       index=0;
-      print_string("direc\r\n");
+      /* print_string("direc\r\n"); */
       /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
       size -= BLK_SIZE;
       if(size <= 0) return;
@@ -83,11 +83,11 @@ void play_file(int inode_num) {
    /* singly indirect */
    get_fs_block(inode->i_block[i],indirect);
    for(i=0; i < 256; i++) {
-      index=0;
-      get_fs_block(indirect[i], musicBuf);
+      play_fs_block(indirect[i]);
       while(index<1024);
+      index=0;
 
-      print_string("sing\r\n");
+      /* print_string("sing\r\n"); */
       /* fwrite( fsBlock, sizeof(char), MIN(size,BLK_SIZE), stdout); */
       size -= BLK_SIZE;
       if(size <= 0) return;
@@ -101,7 +101,7 @@ void play_file(int inode_num) {
       get_fs_block(doubly_indirect[j],indirect);
       for(i=0; i < 256; i++) {
 	 play_fs_block(indirect[i]);
-	 print_string("doub\r\n");
+	 /* print_string("doub\r\n"); */
 	 while(index<1024);
 	 index=0;
 	 /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
@@ -113,14 +113,13 @@ void play_file(int inode_num) {
 
 
 void play_fs_block(uint32_t block) {
-   sdReadData( 2 * block + 1 , 0, musicBuf, 512);
    /* read_data */
    sdReadData( 2 * block     , 0, musicBuf+512,     512);
 
-   /* while(index <= 512); */
+   while(index <= 512);
 
    /* read_data */
-   /* sdReadData( 2 * block + 1 , 0, musicBuf, 512); */
+   sdReadData( 2 * block + 1 , 0, musicBuf, 512);
 
    /* maybe do stuff here? */
 
