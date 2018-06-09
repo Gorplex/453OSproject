@@ -8,10 +8,14 @@
 #include "ext2Luke.h"
 #include "serial.h"
 
+volatile uint16_t index = 0;
+volatile uint8_t musicBuf[1024];
+
 
 void start_audio_pwm();
 void start_system_timer();
 void play_file(int inode_num);
+void play_fs_block(uint32_t block);
 int main(void) {
    uint8_t sd_card_status;
 
@@ -39,7 +43,7 @@ int main(void) {
    start_audio_pwm();
    sei();
 
-   play_file(113);
+   play_file(13);
 
 
    
@@ -52,19 +56,25 @@ int main(void) {
 
 
 void play_file(int inode_num) {
+   index=0;
+   
    struct ext2_inode * inode;
    uint8_t buf[BLK_SIZE];
    uint8_t fsBlock[BLK_SIZE];
    uint32_t indirect[BLK_SIZE/4];
    uint32_t doubly_indirect[BLK_SIZE/4];
-   int size;
+   uint32_t size;
    get_file_inode( inode_num, buf);
    inode = (struct ext2_inode *) buf;
 
    size = inode->i_size;
    int i;
    for(i=0; i < 12; i++) {
-      get_fs_block(inode->i_block[i],fsBlock);
+      index=0;
+      play_fs_block(inode->i_block[i]);
+      while(index<1024);
+      index=0;
+      print_string("direc\r\n");
       /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
       size -= BLK_SIZE;
       if(size <= 0) return;
@@ -73,7 +83,11 @@ void play_file(int inode_num) {
    /* singly indirect */
    get_fs_block(inode->i_block[i],indirect);
    for(i=0; i < 256; i++) {
-      get_fs_block(indirect[i],fsBlock);
+      index=0;
+      get_fs_block(indirect[i], musicBuf);
+      while(index<1024);
+
+      print_string("sing\r\n");
       /* fwrite( fsBlock, sizeof(char), MIN(size,BLK_SIZE), stdout); */
       size -= BLK_SIZE;
       if(size <= 0) return;
@@ -86,7 +100,10 @@ void play_file(int inode_num) {
 
       get_fs_block(doubly_indirect[j],indirect);
       for(i=0; i < 256; i++) {
-	 get_fs_block(indirect[i],fsBlock);
+	 play_fs_block(indirect[i]);
+	 print_string("doub\r\n");
+	 while(index<1024);
+	 index=0;
 	 /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
 	 size -= BLK_SIZE;
 	 if(size <= 0) return;
@@ -94,6 +111,20 @@ void play_file(int inode_num) {
    }
 }
 
+
+void play_fs_block(uint32_t block) {
+   sdReadData( 2 * block + 1 , 0, musicBuf, 512);
+   /* read_data */
+   sdReadData( 2 * block     , 0, musicBuf+512,     512);
+
+   /* while(index <= 512); */
+
+   /* read_data */
+   /* sdReadData( 2 * block + 1 , 0, musicBuf, 512); */
+
+   /* maybe do stuff here? */
+
+}
 
 
 //PROJECT 5 CODE (from sengs os_util.c)
@@ -121,9 +152,9 @@ void start_audio_pwm() {
 
 
 ISR(TIMER0_COMPA_vect) {
-   static uint8_t i =0;
-   OCR2B = i++;
+   /* static uint8_t i =0; */
+   OCR2B = musicBuf[index++];
 
-   if(i==0)
-      print_string(".");
+   /* if(i==0) */
+   /*    print_string("."); */
 }
