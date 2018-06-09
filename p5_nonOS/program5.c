@@ -14,6 +14,7 @@ volatile uint8_t musicBuf[1024];
 
 void start_audio_pwm();
 void start_system_timer();
+uint8_t updateUI(uint16_t time);
 void play_file(int inode_num);
 void play_fs_block(uint32_t block);
 int main(void) {
@@ -25,6 +26,7 @@ int main(void) {
 
    print_int( sd_card_status);
 
+   memset(musicBuf, 0, 1024);
 
 
    
@@ -38,15 +40,13 @@ int main(void) {
    /* print_dir( (struct ext2_inode *) buf); */
 
    
-   
    start_system_timer();
    start_audio_pwm();
    sei();
 
    play_file(13);
 
-
-   
+   memset(musicBuf, 0, 1024);
    print_string("end of test\r\n");
    while(1);
    return 0;
@@ -56,26 +56,22 @@ int main(void) {
 
 
 void play_file(int inode_num) {
-   index=0;
-   
    struct ext2_inode * inode;
    uint8_t buf[BLK_SIZE];
    uint8_t fsBlock[BLK_SIZE];
    uint32_t indirect[BLK_SIZE/4];
    uint32_t doubly_indirect[BLK_SIZE/4];
-   uint32_t size;
+   int32_t size, totalSize;
    get_file_inode( inode_num, buf);
    inode = (struct ext2_inode *) buf;
 
-   size = inode->i_size;
+   totalSize = size = inode->i_size;
    int i;
+   index=0;
    for(i=0; i < 12; i++) {
-      index=0;
       play_fs_block(inode->i_block[i]);
       while(index<1024);
       index=0;
-      /* print_string("direc\r\n"); */
-      /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
       size -= BLK_SIZE;
       if(size <= 0) return;
    }
@@ -84,6 +80,7 @@ void play_file(int inode_num) {
    get_fs_block(inode->i_block[i],indirect);
    for(i=0; i < 256; i++) {
       play_fs_block(indirect[i]);
+      updateUI((totalSize - size) /(21*1024));
       while(index<1024);
       index=0;
 
@@ -102,6 +99,7 @@ void play_file(int inode_num) {
       for(i=0; i < 256; i++) {
 	 play_fs_block(indirect[i]);
 	 /* print_string("doub\r\n"); */
+	 updateUI((totalSize - size) /(21*1024));
 	 while(index<1024);
 	 index=0;
 	 /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
@@ -123,6 +121,16 @@ void play_fs_block(uint32_t block) {
 
    /* maybe do stuff here? */
 
+}
+
+uint8_t updateUI(uint16_t time) {
+   set_cursor(10,10);
+   print_string("UI ");
+   print_int32(time);
+   print_cmd("K");
+   while(index<1000) print_string(".");
+
+   return 0;
 }
 
 
@@ -152,7 +160,7 @@ void start_audio_pwm() {
 
 ISR(TIMER0_COMPA_vect) {
    /* static uint8_t i =0; */
-   OCR2B = musicBuf[index++];
+   OCR2B = musicBuf[index++ & 0x3FF];
 
    /* if(i==0) */
    /*    print_string("."); */
