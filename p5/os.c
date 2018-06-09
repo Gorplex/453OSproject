@@ -103,27 +103,12 @@ void check_sleeping_threads(){
 
 //if no valid thread to swap to returns same thread
 //because it is called while interrupts are disabled
-/*
 uint8_t get_next_thread(){
    uint8_t next;
-   check_sleeping_threads();
+   //check_sleeping_threads(); P5 MOVED TO ISR
    next = (sys->curThread+1)%sys->threadCount;
    while(sys->threads[next].thread_status != THREAD_READY
       && sys->threads[next].thread_status != THREAD_RUNNING){
-      next = (next+1)%sys->threadCount;
-      if(next == sys->curThread){
-         break;
-      }
-   }
-   return next;
-}*/
-//Project 5 PRIORITY NEXT THREAD
-
-uint8_t get_next_thread(){
-   uint8_t next;
-   //check_sleeping_threads();   MOVED TO ISR FOR SPEED
-   next = 0;   //next always starts at thread 0, priority queue
-   while(sys->threads[next].thread_status != THREAD_READY){ //removed it alowing the running thread to run
       next = (next+1)%sys->threadCount;
       if(next == sys->curThread){
          break;
@@ -236,7 +221,7 @@ ISR(TIMER0_COMPA_vect) {
    
    sys->mtime += MS_PER_TICK;
    check_sleeping_threads();
-   thread_swap(get_next_thread());
+   thread_swap(0);
 }
 
 //next two functions for p3

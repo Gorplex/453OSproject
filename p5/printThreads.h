@@ -5,7 +5,7 @@
 #include "serial.h"
 #include "synchro.h"
 
-#define PRINT_THREAD_SIZE 500
+#define PRINT_THREAD_SIZE 250
 
 void printThread(thread_t thread);
 void printSys(system_t * sys);
