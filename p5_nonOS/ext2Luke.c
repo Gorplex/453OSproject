@@ -145,7 +145,7 @@ void print_file(int inode_num) {
 
 
 
-void print_dir( struct ext2_inode * inodeDir) {
+void print_dir( struct ext2_inode * inodeDir, uint32_t *inodes) {
    struct ext2_dir_entry * dirent;
    int i = 0;
    uint64_t dist=0;
@@ -174,16 +174,20 @@ void print_dir( struct ext2_inode * inodeDir) {
 	 /* 	   dirent->name_len, dirent->name, */
 	 /* 	   0, "D" ); */
       } else {
+	 inodes[i] = dirent->inode;
+	 print_int32(dirent->inode);
+	 print_string(" ");
 	 print_stringn(dirent->name, dirent->name_len);
 	 print_string("\r\n");
 	 /* sprintf( output[i], "  %-15.*s %10d %10s\r\n", */
 	 /* 	   dirent->name_len, dirent->name, */
 	 /* 	   inode->i_size, "F"); */
+	 i++;
       }
 
 
       dirent = (struct ext2_dir_entry *) ((uint8_t *)dirent + dirent->rec_len);
-      i++;	    
+      /* i++;	     */
    }
 
    

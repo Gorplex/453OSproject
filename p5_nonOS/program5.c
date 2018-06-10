@@ -14,31 +14,33 @@ volatile uint8_t musicBuf[1024];
 
 void start_audio_pwm();
 void start_system_timer();
-uint8_t updateUI(uint16_t time);
+uint8_t updateUI(uint32_t played, uint32_t total);
 void play_file(int inode_num);
 void play_fs_block(uint32_t block);
 int main(void) {
    uint8_t sd_card_status;
-
-   sd_card_status = sdInit(1);   //initialize the card with slow clock
-
-   serial_init(); 
-
-   print_int( sd_card_status);
-
-   memset(musicBuf, 0, 1024);
-
-
-   
    int inode_num = 2;
    uint8_t buf[1024];
-   inode_num = find_file("Evgeny_Grinko_-_05_-_Sunset.wav");
-   print_int(inode_num);
-   print_string("start of test\r\n");
-   get_file_inode( inode_num, buf);
-   print_string("mid test\r\n");
-   /* print_dir( (struct ext2_inode *) buf); */
+   uint32_t inodes[32];
+   
+   sd_card_status = sdInit(1);   //initialize the card with slow clock
+   serial_init(); 
 
+   memset(musicBuf, 0, 1024);
+   memset(inodes, 0, 32 * sizeof(uint32_t));
+
+   clear_screen();
+
+   /* inode_num = find_file("Evgeny_Grinko_-_05_-_Sunset.wav"); */
+   print_dir( (struct ext2_inode *) buf, inodes);
+
+   clear_screen();
+   int i;
+   for(i=0; i < 32; i++) {
+      print_int32(inodes[i]);
+      print_string("\r\n");
+   }
+   
    
    start_system_timer();
    start_audio_pwm();
@@ -70,6 +72,7 @@ void play_file(int inode_num) {
    index=0;
    for(i=0; i < 12; i++) {
       play_fs_block(inode->i_block[i]);
+      updateUI(totalSize - size, size);
       while(index<1024);
       index=0;
       size -= BLK_SIZE;
@@ -80,7 +83,7 @@ void play_file(int inode_num) {
    get_fs_block(inode->i_block[i],indirect);
    for(i=0; i < 256; i++) {
       play_fs_block(indirect[i]);
-      updateUI((totalSize - size) /(21*1024));
+      updateUI(totalSize - size, totalSize);
       while(index<1024);
       index=0;
 
@@ -99,7 +102,7 @@ void play_file(int inode_num) {
       for(i=0; i < 256; i++) {
 	 play_fs_block(indirect[i]);
 	 /* print_string("doub\r\n"); */
-	 updateUI((totalSize - size) /(21*1024));
+	 updateUI(totalSize - size, totalSize);
 	 while(index<1024);
 	 index=0;
 	 /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
@@ -123,12 +126,24 @@ void play_fs_block(uint32_t block) {
 
 }
 
-uint8_t updateUI(uint16_t time) {
-   set_cursor(10,10);
-   print_string("UI ");
-   print_int32(time);
-   print_cmd("K");
-   while(index<1000) print_string(".");
+uint8_t updateUI(uint32_t played, uint32_t total) {
+   set_cursor(4,15);
+   print_string("Time: ");
+   print_int32( played /(21*1024));
+   /* print_cmd("K"); */
+   
+   set_cursor(12,10);
+   write_byte('[');
+   int i;
+   for(i=0; i <= 50 * played / total; i++) {
+      write_byte('#');
+   }
+   while(i++ < 50) {
+      write_byte('_');
+   }
+   write_byte(']');   
+   set_cursor(50,0);
+   /* while(index<1000) print_string("."); */
 
    return 0;
 }

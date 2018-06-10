@@ -22,7 +22,7 @@
 
 void read_data(uint32_t block, uint16_t offset, uint8_t* data, uint16_t size);
 void get_fs_block(uint32_t block, uint8_t *buf);
-void print_dir( struct ext2_inode * inode);
+void print_dir( struct ext2_inode * inode, uint32_t * inodes);
 void print_file(int inode_num);
 uint32_t get_file_inode( uint32_t inodeNum, uint8_t * buf);
 int get_file( int inode_num, char * fname);
