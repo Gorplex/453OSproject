@@ -175,8 +175,8 @@ void print_dir( struct ext2_inode * inodeDir, uint32_t *inodes) {
 	 /* 	   0, "D" ); */
       } else {
 	 inodes[i] = dirent->inode;
-	 print_int32(dirent->inode);
-	 print_string(" ");
+	 /* print_int32(dirent->inode); */
+	 print_string("\t");
 	 print_stringn(dirent->name, dirent->name_len);
 	 print_string("\r\n");
 	 /* sprintf( output[i], "  %-15.*s %10d %10s\r\n", */
@@ -215,6 +215,7 @@ uint32_t get_file_inode( uint32_t inodeNum, uint8_t * inodeBuf) {
    
    return inode->i_size;
 }
+
 
 void get_fs_block(uint32_t block, uint8_t *buf) {
    /* read_data */

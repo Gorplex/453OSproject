@@ -10,7 +10,7 @@
 
 volatile uint16_t index = 0;
 volatile uint8_t musicBuf[1024];
-
+uint8_t songIndex;
 
 void start_audio_pwm();
 void start_system_timer();
@@ -22,7 +22,7 @@ int main(void) {
    int inode_num = 2;
    uint8_t buf[1024];
    uint32_t inodes[32];
-   
+
    sd_card_status = sdInit(1);   //initialize the card with slow clock
    serial_init(); 
 
@@ -34,19 +34,29 @@ int main(void) {
    /* inode_num = find_file("Evgeny_Grinko_-_05_-_Sunset.wav"); */
    print_dir( (struct ext2_inode *) buf, inodes);
 
-   clear_screen();
-   int i;
-   for(i=0; i < 32; i++) {
-      print_int32(inodes[i]);
-      print_string("\r\n");
-   }
+
+   /* int i; */
+   /* for(i=0; i < 32; i++) { */
+   /*    print_int32(inodes[i]); */
+   /*    print_string("\r\n"); */
+   /* } */
    
    
    start_system_timer();
    start_audio_pwm();
    sei();
 
-   play_file(13);
+   while(1) {
+      play_file(inodes[songIndex]);
+      set_cursor(songIndex,0);
+      print_string("      ");
+
+      songIndex++;
+      if(inodes[songIndex] == 0) {
+	 songIndex=0;
+      }
+
+   }
 
    memset(musicBuf, 0, 1024);
    print_string("end of test\r\n");
@@ -127,12 +137,16 @@ void play_fs_block(uint32_t block) {
 }
 
 uint8_t updateUI(uint32_t played, uint32_t total) {
-   set_cursor(4,15);
-   print_string("Time: ");
+   uint8_t c;
+   set_cursor(songIndex,0);
+   print_string("  >>>>");
+   set_cursor(24,0);
+   print_string("Time (sec): ");
    print_int32( played /(21*1024));
+   print_string("  ");
    /* print_cmd("K"); */
    
-   set_cursor(12,10);
+   set_cursor(24,16);
    write_byte('[');
    int i;
    for(i=0; i <= 50 * played / total; i++) {
@@ -141,10 +155,18 @@ uint8_t updateUI(uint32_t played, uint32_t total) {
    while(i++ < 50) {
       write_byte('_');
    }
-   write_byte(']');   
-   set_cursor(50,0);
-   /* while(index<1000) print_string("."); */
+   print_string("] %");   
+   print_int( played/total);
+   
+   c = read_byte();
+   if( c == 'n') {
 
+   } else if( c == 'p') {
+
+   }
+
+   set_cursor(30,0);
+   while(index<1000) print_string(".");
    return 0;
 }
 
