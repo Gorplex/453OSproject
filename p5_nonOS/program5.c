@@ -54,7 +54,7 @@ int main(void) {
 
    while(1) {
       play_file(inodes[songIndex]);
-      set_cursor(songIndex,0);
+      set_cursor(songIndex+1,0);
       print_string("      ");
 
       songIndex++;
@@ -147,14 +147,14 @@ void play_fs_block(uint32_t block) {
 
 uint8_t updateUI(uint32_t played, uint32_t total) {
    uint8_t c;
-   set_cursor(songIndex,0);
+   set_cursor(songIndex+1,0);
    print_string("  >>>>");
    set_cursor(24,0);
    print_string("Time (sec): ");
    print_int32( played /(21*1024));
    print_string(" / ");
    print_int32( total /(21*1024));
-   print_string("\t\t");
+   print_string("          ");
    /* print_cmd("K"); */
    
    set_cursor(24,22);
@@ -176,7 +176,7 @@ uint8_t updateUI(uint32_t played, uint32_t total) {
       return 1;
    } else if( c == 'p') {
       if(songIndex != 0) {
-	 set_cursor(songIndex,0);
+	 set_cursor(songIndex+1,0);
 	 print_string("      ");
 	 songIndex-=2;
       }
