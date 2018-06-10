@@ -48,8 +48,8 @@ clean:
 #luke stuff
 #OUT OF DATE
 handinLuke: *.c *.h Makefile
-	scp $^ calpoly3:~/cpe453/p3_synchro
-	ssh calpoly3 "cd ~/cpe453/p3_synchro; handin jseng 453_program3_7 *"
+	scp $^ calpoly3:~/cpe453/p5_nonOS
+	ssh calpoly3 "cd ~/cpe453/p5_nonOS; handin jseng 453_program5_7 *"
 
 
 handinJohn:
