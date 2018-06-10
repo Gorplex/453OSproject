@@ -183,6 +183,7 @@ void print_dir( struct ext2_inode * inodeDir, uint32_t *inodes) {
 	 /* 	   dirent->name_len, dirent->name, */
 	 /* 	   inode->i_size, "F"); */
 	 i++;
+
       }
 
 

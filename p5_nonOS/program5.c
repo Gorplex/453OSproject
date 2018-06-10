@@ -26,14 +26,20 @@ int main(void) {
    sd_card_status = sdInit(1);   //initialize the card with slow clock
    serial_init(); 
 
+   if(!sd_card_status) {
+      print_string("sd init failed\r\n");
+      while(1);
+   }
+   
    memset(musicBuf, 0, 1024);
    memset(inodes, 0, 32 * sizeof(uint32_t));
 
    clear_screen();
 
-   /* inode_num = find_file("Evgeny_Grinko_-_05_-_Sunset.wav"); */
+   get_file_inode( 2, buf);
    print_dir( (struct ext2_inode *) buf, inodes);
 
+  
 
    /* int i; */
    /* for(i=0; i < 32; i++) { */
@@ -82,7 +88,8 @@ void play_file(int inode_num) {
    index=0;
    for(i=0; i < 12; i++) {
       play_fs_block(inode->i_block[i]);
-      updateUI(totalSize - size, size);
+      if(updateUI(totalSize - size, size))
+	 return;
       while(index<1024);
       index=0;
       size -= BLK_SIZE;
@@ -93,7 +100,8 @@ void play_file(int inode_num) {
    get_fs_block(inode->i_block[i],indirect);
    for(i=0; i < 256; i++) {
       play_fs_block(indirect[i]);
-      updateUI(totalSize - size, totalSize);
+      if(updateUI(totalSize - size, totalSize))
+	 return;
       while(index<1024);
       index=0;
 
@@ -112,7 +120,8 @@ void play_file(int inode_num) {
       for(i=0; i < 256; i++) {
 	 play_fs_block(indirect[i]);
 	 /* print_string("doub\r\n"); */
-	 updateUI(totalSize - size, totalSize);
+	 if(updateUI(totalSize - size, totalSize))
+	    return;
 	 while(index<1024);
 	 index=0;
 	 /* fwrite( fsBlock, sizeof(char), MIN(BLK_SIZE, size), stdout); */
@@ -143,10 +152,12 @@ uint8_t updateUI(uint32_t played, uint32_t total) {
    set_cursor(24,0);
    print_string("Time (sec): ");
    print_int32( played /(21*1024));
-   print_string("  ");
+   print_string(" / ");
+   print_int32( total /(21*1024));
+   print_string("\t\t");
    /* print_cmd("K"); */
    
-   set_cursor(24,16);
+   set_cursor(24,22);
    write_byte('[');
    int i;
    for(i=0; i <= 50 * played / total; i++) {
@@ -155,14 +166,21 @@ uint8_t updateUI(uint32_t played, uint32_t total) {
    while(i++ < 50) {
       write_byte('_');
    }
-   print_string("] %");   
-   print_int( played/total);
+   print_string("] % ");   
+   print_int( 100*played/total);
+
    
    c = read_byte();
    if( c == 'n') {
-
+      /* songIndex++; */
+      return 1;
    } else if( c == 'p') {
-
+      if(songIndex != 0) {
+	 set_cursor(songIndex,0);
+	 print_string("      ");
+	 songIndex-=2;
+      }
+      return -1;
    }
 
    set_cursor(30,0);
